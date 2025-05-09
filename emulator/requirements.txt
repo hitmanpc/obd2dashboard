@@ -1,0 +1,4 @@
+requests
+pyserial
+pyserial-asyncio
+git+https://github.com/ircama/ELM327-emulator

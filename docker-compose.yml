@@ -1,0 +1,23 @@
+# version: '3'
+
+services:
+  obd_backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    # devices:
+    #   - "/dev/pts/8:/dev/pts/8"
+    # privileged: true
+
+  react_frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - obd_backend
+    # prvileged: true
+
+  # obd_emulator:
+  #   build: ./emulator
+  #   ports:
+  #     - "35000:35000"
