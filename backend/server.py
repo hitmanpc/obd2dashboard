@@ -1,6 +1,7 @@
 import asyncio
 from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.websockets import WebSocketDisconnect
 
 
 HOST = 'host.docker.internal'
@@ -59,9 +60,10 @@ async def send_obd_command_tcp(cmd: str) -> str:
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     print("WebSocket connected.")
+    speed_unit = 'km/h'  # Default speed unit
     try:
         while True:
-            print("Sending OBD commands...")
+            # Send OBD data
             rpm_raw = await send_obd_command_tcp("010C")  # Engine RPM
             speed_raw = await send_obd_command_tcp("010D")  # Vehicle Speed
             throttle_raw = await send_obd_command_tcp("0111")  # Throttle Position
@@ -69,21 +71,34 @@ async def websocket_endpoint(websocket: WebSocket):
 
             payload = {
                 "RPM": parse_obd_response(rpm_raw, "010C"),
-                "Speed": parse_obd_response(speed_raw, "010D"),
+                "Speed": parse_obd_response(speed_raw, "010D", speed_unit),
                 "Throttle": parse_obd_response(throttle_raw, "0111"),
                 "Coolant Temp": parse_obd_response(coolant_raw, "0105"),
+                "SpeedUnit": speed_unit  # Add current speed unit to payload
             }
-            print(f"Sending data: {payload}")
             await websocket.send_json(payload)
 
-            await asyncio.sleep(0.5)
+            # Check for incoming messages with a timeout
+            try:
+                message = await asyncio.wait_for(websocket.receive_text(), timeout=0.5)
+                if message == 'toggle_speed_unit':
+                    speed_unit = 'mph' if speed_unit == 'km/h' else 'km/h'
+            except asyncio.TimeoutError:
+                pass  # No message received within timeout
+            except WebSocketDisconnect:
+                break
+            except Exception as e:
+                print(f"WebSocket message error: {e}")
+
+    except WebSocketDisconnect:
+        print("WebSocket disconnected normally.")
     except Exception as e:
-        print(f"WebSocket closed or error: {e}")
+        print(f"WebSocket error: {e}")
     finally:
-        print("WebSocket disconnected.")
+        print("WebSocket endpoint closed.")
 
 
-def parse_obd_response(response: str, pid: str):
+def parse_obd_response(response: str, pid: str, speed_unit: str = 'km/h'):
     """
     Parses a hex OBD-II response and returns a human-readable value.
     """
@@ -111,9 +126,12 @@ def parse_obd_response(response: str, pid: str):
         if pid == "010C":  # RPM needs A and B
             B = int(parts[data_start_index + 3], 16)
             rpm = ((A * 256) + B) / 4
-            return f"{rpm:.0f} RPM"
+            return round(rpm)
         
         elif pid == "010D":  # Speed
+            if speed_unit == 'mph':
+                mph = round(A * 0.621371, 1)
+                return f"{mph} mph"
             return f"{A} km/h"
         
         elif pid == "0111":  # Throttle Position
