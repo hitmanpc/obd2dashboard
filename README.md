@@ -2,7 +2,7 @@
 
 ## 📋 Overview
 
-**OBD2 Dashboard** is a comprehensive vehicle diagnostic and monitoring application that provides real-time insights into your vehicle's performance using OBD2 (On-Board Diagnostics) data.
+**OBD2 Dashboard** is a simple vehicle monitoring application that provides real-time insights into your vehicle's performance using OBD2 data.
 
 ## ✨ Features
 
@@ -15,39 +15,21 @@
 - ![Python](https://img.shields.io/badge/Python-3.8+-blue)
 - ![Node.js](https://img.shields.io/badge/Node.js-14+-green)
 - ![React](https://img.shields.io/badge/React-16+-lightblue)
-- OBD2 Emulator
+- [![OBD2 Emulator](https://img.shields.io/badge/ELM327-emulator-blue)](https://github.com/Ircama/ELM327-emulator)
 
 ## 📦 Setup and Installation
 
-### Backend (Python)
+### Docker Compose
 
-1. Navigate to the backend directory
-   ```bash
-   cd backend
-   ```
+```bash
+docker-compose up --build -d
+```
 
-2. Create a virtual environment
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
-   ```
+### Docker Compose Down
 
-3. Install dependencies
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-### Frontend (React)
-
-1. Navigate to the frontend directory
-   ```bash
-   cd frontend
-   ```
-
-2. Install dependencies
-   ```bash
-   npm install
-   ```
+```bash
+docker-compose down
+```
 
 ## 🚀 Running the Application
 
@@ -58,34 +40,10 @@ Before starting the application, start the OBD2 emulator:
 bin/python -m elm -n 35000 --daemon
 ```
 
-### Backend Server
-
-1. Navigate to the backend directory
-   ```bash
-   cd backend
-   ```
-
-2. Start the Python server
-   ```bash
-   python server.py
-   ```
-
-### Frontend Development Server
-
-1. Navigate to the frontend directory
-   ```bash
-   cd frontend
-   ```
-
-2. Start the React development server
-   ```bash
-   npm start
-   ```
-
 ## 🔧 Configuration
 
-- Modify `backend/config.py` for backend settings
-- Update `frontend/.env` for frontend configuration
+- Modify `backend/server.py` for backend logic
+- Modify `frontend/src/App.js` for frontend logic and UI
 
 ## 🛠️ Troubleshooting
 
@@ -101,13 +59,13 @@ bin/python -m elm -n 35000 --daemon
 4. 📤 Push to the branch
 5. 🔀 Create a Pull Request
 
-## 📄 License
+<!-- ## 📄 License
 
-*[Specify your project's license]*
+*[Specify your project's license]* -->
 
 ## 📞 Contact
 
-*[Your contact information or project maintainer details]*
+don@donbowman.info
 
 ---
 
