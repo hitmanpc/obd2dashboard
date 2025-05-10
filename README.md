@@ -39,6 +39,20 @@ Before starting the application, start the OBD2 emulator:
 ```bash
 bin/python -m elm -n 35000 --daemon
 ```
+should see "ELM327-emulator daemon service STARTED on  /dev/pts/<x>" where <x> is a number.
+
+### Verify backend is running
+
+Open your browser and navigate to:
+ http://localhost:8000/docs
+
+### Verify frontend is running
+
+Open your browser and navigate to:
+ http://localhost:3000
+
+
+ 
 
 ## 🔧 Configuration
 
