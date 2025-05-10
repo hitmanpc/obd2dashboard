@@ -2,6 +2,15 @@ import React, { useEffect, useState, useRef } from 'react';
 import './Dashboard.css';
 console.log('React app started!');
 
+// Utility function to determine gear and color zones
+const getGaugeInfo = (rpm) => {
+  if (rpm < 1000) return { gear: 'N', color: '#4CAF50', zone: 'idle' };
+  if (rpm < 2500) return { gear: '1-2', color: '#2196F3', zone: 'normal' };
+  if (rpm < 4000) return { gear: '3-4', color: '#FFC107', zone: 'mid' };
+  if (rpm < 5500) return { gear: '5', color: '#FF5722', zone: 'high' };
+  return { gear: '6', color: '#F44336', zone: 'redline' };
+};
+
 function App() {
   const [data, setData] = useState({});
   const [speedUnit, setSpeedUnit] = useState('km/h');
@@ -70,50 +79,59 @@ function App() {
   }, []);  // ✅ Ensure the dependency array is EMPTY
   
 
-  return (
-    <div className="mustang-dashboard">
-      <div className="dashboard-container">
-        <div className="digital-header">OBD2 DIAGNOSTIC SYSTEM</div>
-        <div className="gauge-cluster">
-          {Object.keys(data).length === 0 ? (
-            <div className="loading-screen">INITIALIZING...</div>
-          ) : (
-            <>
-              <div className="rpm-gauge">
-                <div className="rpm-gauge-container">
-                  <div 
-                    className="rpm-needle" 
-                    style={{ 
-                      transform: `rotate(${Math.min(parseFloat(data['RPM'] || 0) / 10, 270)}deg)` 
-                    }}
-                  />
-                  <div className="rpm-value">{Math.round(parseFloat(data['RPM'] || 0))}</div>
-                  <div className="rpm-label">RPM</div>
-                </div>
-              </div>
-              {Object.keys(data)
-                .filter(key => key !== 'RPM' && key !== 'SpeedUnit')
-                .map((key) => (
-                  <div key={key} className="gauge-item">
-                    <div className="gauge-label">{key.toUpperCase()}</div>
-                    <div className="gauge-value">
-                      {Math.round(parseFloat(data[key] || 0))}
-                    </div>
+  const rpmValue = Math.round(parseFloat(data['RPM'] || 0));
+    const gaugeInfo = getGaugeInfo(rpmValue);
+
+    return (
+      <div className="car-dashboard">
+        <div className="dashboard-grid">
+          <div className="rpm-section">
+            <svg viewBox="0 0 200 200" className="rpm-gauge">
+              <path
+                d="M100 20 A80 80 0 1 1 20 100"
+                fill="none"
+                stroke="#333"
+                strokeWidth="20"
+              />
+              <path
+                d="M100 20 A80 80 0 0 1 180 100"
+                fill="none"
+                stroke={gaugeInfo.color}
+                strokeWidth="20"
+                strokeDasharray={`${(rpmValue / 6000) * 251.33}, 251.33`}
+              />
+              <text x="100" y="100" textAnchor="middle" className="rpm-text">
+                {rpmValue}
+              </text>
+              <text x="100" y="130" textAnchor="middle" className="gear-text">
+                {gaugeInfo.gear}
+              </text>
+            </svg>
+          </div>
+          <div className="info-section">
+            {Object.keys(data)
+              .filter(key => key !== 'RPM' && key !== 'SpeedUnit')
+              .map((key) => (
+                <div key={key} className="info-item">
+                  <div className="info-label">{key.toUpperCase()}</div>
+                  <div className="info-value">
+                    {Math.round(parseFloat(data[key] || 0))}
                   </div>
-                ))
-              }
-            </>
-          )}
-        </div>
-        <div className="speed-toggle" onClick={toggleSpeedUnit}>
-          TOGGLE: {speedUnit}
-        </div>
-        <div className="digital-footer">
-          <div className="status-bar">SYSTEM: ONLINE</div>
+                </div>
+              ))
+            }
+          </div>
+          <div className="controls-section">
+            <div className="speed-toggle" onClick={toggleSpeedUnit}>
+              SPEED UNIT: {speedUnit}
+            </div>
+            <div className="system-status">
+              SYSTEM: {Object.keys(data).length > 0 ? 'ONLINE' : 'INITIALIZING'}
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
 }
 
 export default App;
