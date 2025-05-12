@@ -40,6 +40,15 @@ Before starting the application, start the OBD2 emulator:
 bin/python -m elm -n 35000 --daemon
 ```
 should see "ELM327-emulator daemon service STARTED on  /dev/pts/<x>" where <x> is a number.
+to see the process running:
+```bash
+ps aux | grep elm
+```
+
+kill the process:
+```bash
+kill <x> where <x> is the number of the pid
+```
 
 ### Verify backend is running
 

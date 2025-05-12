@@ -88,17 +88,17 @@ function App() {
           <div className="rpm-section">
             <svg viewBox="0 0 200 200" className="rpm-gauge">
               <path
-                d="M100 20 A80 80 0 1 1 20 100"
+                d="M100 20 A80 80 0 1 0 180 100"
                 fill="none"
                 stroke="#333"
                 strokeWidth="20"
               />
               <path
-                d="M100 20 A80 80 0 0 1 180 100"
+                d="M180 100 A 80 80 0 1 1 100 20"
                 fill="none"
                 stroke={gaugeInfo.color}
                 strokeWidth="20"
-                strokeDasharray={`${(rpmValue / 6000) * 251.33}, 251.33`}
+                strokeDasharray={`${(rpmValue / 6000) * (2 * Math.PI * 90)}, ${(2 * Math.PI * 90)}`} /* 2 * Math.PI * 90 is the new circumference of the circle */
               />
               <text x="100" y="100" textAnchor="middle" className="rpm-text">
                 {rpmValue}
