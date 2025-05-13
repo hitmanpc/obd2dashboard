@@ -59,8 +59,8 @@ Open your browser and navigate to:
 Open your browser and navigate to:
  http://localhost:3000
 
-
- 
+you should see something like this:
+![image](/docs/images/GaugeScreenshot.png)
 
 ## 🔧 Configuration
 
