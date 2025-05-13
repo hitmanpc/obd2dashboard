@@ -19,7 +19,7 @@
 
 ## 📦 Setup and Installation
 
-### Docker Compose
+### Docker Compose (docker-compose.override.yml exists)
 
 ```bash
 docker-compose up --build -d
@@ -31,8 +31,7 @@ docker-compose up --build -d
 docker-compose down
 ```
 
-## 🚀 Running the Application
-
+## 🚀 Running the Emulator outside of docker (aka on host machine)
 ### Start OBD2 Emulator
 
 Before starting the application, start the OBD2 emulator:

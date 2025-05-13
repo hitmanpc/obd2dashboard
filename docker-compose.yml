@@ -16,8 +16,3 @@ services:
     depends_on:
       - obd_backend
     # prvileged: true
-
-  obd_emulator:
-    build: ./emulator
-    ports:
-      - "35000:35000"

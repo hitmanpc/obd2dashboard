@@ -1,0 +1,7 @@
+version: '3'
+
+services:
+  obd_emulator:
+    build: ./emulator
+    ports:
+      - "35000:35000"
