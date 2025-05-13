@@ -7,8 +7,11 @@ WORKDIR /app
 # copy requirements.txt (must include the git+... line)
 COPY requirements.txt .
 
-# Install git (needed to clone the repo)
-RUN apt-get update && apt-get install -y git \
+# Install required packages
+RUN apt-get update && apt-get install -y \
+    git \
+    tini \
+    procps \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -21,7 +24,15 @@ RUN pip install --no-cache-dir -r requirements.txt
 EXPOSE 35000
 
 # Set environment variable for Python unbuffered output
-# ENV PYTHONUNBUFFERED=1
+ENV PYTHONUNBUFFERED=1
 
-# Default command to run the emulator (listening on TCP socket)
-CMD ["sh", "-c", "python -m elm -n 35000 --daemon && tail -f /dev/null"]
+# Use tini as init system
+ENTRYPOINT ["/usr/bin/tini", "--"]
+
+# Create a startup script
+COPY start.sh /app/
+RUN chmod +x /app/start.sh
+
+# Default command to run the emulator
+CMD ["/app/start.sh"]
+# CMD ["python", "-m", "elm", "-n", "35000", "--daemon"] 
