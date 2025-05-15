@@ -23,6 +23,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # dotnet 
-/bin
-/obj
-/.vs
+bin/
+obj/
+*.user
+*.swp
