@@ -1,16 +1,18 @@
-# version: '3'
 
 services:
   obd_backend:
     build: ./backend
+    container_name: obd_backend
+    environment:
+      - OBD_PORT=/dev/ttyUSB0
+      #Use /dev/serial0 or /dev/ttyAMA0 for Raspberry Pi.
     ports:
       - "8000:8000"
-    # devices:
-    #   - "/dev/pts/8:/dev/pts/8"
-    # privileged: true
+    privileged: true
 
   react_frontend:
     build: ./frontend
+    container_name: react_frontend
     ports:
       - "3000:3000"
     depends_on:

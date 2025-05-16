@@ -1,7 +1,31 @@
-version: '3'
-
 services:
   obd_emulator:
     build: ./emulator
+    container_name: elm327Emulator
     ports:
       - "35000:35000"
+    volumes:
+      - obd-virtual-port:/virtual
+
+  # socat:
+  #   build: 
+  #     context: .
+  #     dockerfile: socat.Dockerfile
+  #   container_name: socat-bridge
+  #   tmpfs:
+  #     - /virtual
+  #   depends_on:
+  #     - obd_emulator
+
+  obd_backend:
+    build: ./backend
+    container_name: obd_backend
+    privileged: true
+    environment:
+      - OBD_PORT=/virtual/usb1
+    volumes:
+      - obd-virtual-port:/virtual
+    depends_on:
+      - obd_emulator
+volumes:
+  obd-virtual-port:
