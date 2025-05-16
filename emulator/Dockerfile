@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y \
     git \
     tini \
     procps \
+    # socat \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -30,9 +31,14 @@ ENV PYTHONUNBUFFERED=1
 ENTRYPOINT ["/usr/bin/tini", "--"]
 
 # Create a startup script
+# COPY tcp2UsbScript.sh /app/
+# RUN chmod +x /app/tcp2UsbScript.sh
 COPY start.sh /app/
 RUN chmod +x /app/start.sh
 
+
 # Default command to run the emulator
 CMD ["/app/start.sh"]
-# CMD ["python", "-m", "elm", "-n", "35000", "--daemon"] 
+
+# CMD ["/app/tcp2UsbScript.sh"]
+# CMD ["python", "-m", "elm", "-n", "35000", "--daemon"]

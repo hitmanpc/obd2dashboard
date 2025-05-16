@@ -1,21 +1,20 @@
-FROM python:3.13-slim-bullseye
-
-RUN apt-get update && apt-get install -y \
-    python3-dev \
-    libbluetooth-dev \
-    bluetooth \
-    usbutils \
-    socat \
-    && rm -rf /var/lib/apt/lists/*
-
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
 
-COPY requirements.txt requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+RUN apt-get update && apt-get install -y socat
 
-COPY . .
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+COPY ObdDashboard.csproj ./
+RUN dotnet restore
 
-# Start socat + server
-#CMD ["sh", "-c", "socat pty,link=/tmp/obd2tcp,raw tcp:host.docker.internal:35000 & uvicorn server:app --host 0.0.0.0 --port 8000; wait"]
-#CMD ["sh", "-c", "socat pty,link=/tmp/obd2tcp,raw tcp:host.docker.internal:35000 & python -m uvicorn server:app --host 0.0.0.0 --port 8000 --log-level debug; wait"]
-CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+COPY . ./
+RUN dotnet publish -c Release -o /app/publish
+
+FROM base AS final
+WORKDIR /app
+COPY --from=build /app/publish .
+USER root
+ENTRYPOINT ["sh", "-c", "mkdir -p /virtual && socat -d -d PTY,link=/virtual/usb1,raw,echo=0,mode=666 TCP:elm327Emulator:35000 & dotnet ObdDashboard.dll"]
+# ENTRYPOINT ["sh", "-c", "socat -d -d PTY,link=/virtual/usb1,raw,echo=0,mode=666 TCP:elm327Emulator:35000 & dotnet ObdDashboard.dll"]
+# ENTRYPOINT [ "dotnet","ObdDashboard.dll" ]
