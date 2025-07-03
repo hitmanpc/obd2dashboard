@@ -12,14 +12,18 @@
 
 ## 🛠️ Prerequisites
 
+- ![C#](https://img.shields.io/badge/.NET-8.0+-purple)  
 - ![Python](https://img.shields.io/badge/Python-3.8+-blue)
 - ![Node.js](https://img.shields.io/badge/Node.js-14+-green)
 - ![React](https://img.shields.io/badge/React-16+-lightblue)
 - [![OBD2 Emulator](https://img.shields.io/badge/ELM327-emulator-blue)](https://github.com/Ircama/ELM327-emulator)
+- [socat](http://www.dest-unreach.org/socat/) (for virtual serial port emulation, required by `emulator/tcp2UsbScript.sh`)
+- bash shell (for running `emulator/tcp2UsbScript.sh`)
+- Docker & Docker Compose (for containerized setup)
 
 ## 📦 Setup and Installation
 
-### Docker Compose (docker-compose.override.yml exists)
+### Docker Compose (docker-compose.override.yml)
 
 ```bash
 docker-compose up --build -d
@@ -62,6 +66,23 @@ Open your browser and navigate to:
 you should see something like this:
 ![image](/docs/images/GaugeScreenshot.png)
 
+## 🚀 Running the Emulator with Virtual Serial Port (tcp2UsbScript.sh) **Alpha, Not really tested yet **
+
+To start the OBD2 emulator and create a virtual serial port using socat, run the following script:
+
+```bash
+cd emulator
+./tcp2UsbScript.sh
+```
+
+- This script will:
+  - Start the ELM327 emulator as a background daemon on TCP port 35000.
+  - Create a virtual serial port at `/virtual/usb1` mapped to the emulator using socat.
+  - Monitor and automatically restart the emulator if it stops.
+  - Clean up processes on exit.
+
+You should see output indicating both the emulator and socat are running, and the virtual serial port is available.
+
 ## 🔧 Configuration
 
 - Modify `backend/server.py` for backend logic
@@ -81,9 +102,9 @@ you should see something like this:
 4. 📤 Push to the branch
 5. 🔀 Create a Pull Request
 
-<!-- ## 📄 License
+## 📄 License
 
-*[Specify your project's license]* -->
+This project is licensed under the [MIT License](./LICENSE). You are free to use, modify, and distribute this software, provided you give appropriate credit.
 
 ## 📞 Contact
 
