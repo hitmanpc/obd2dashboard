@@ -11,8 +11,8 @@ function App(): JSX.Element {
   const { data, speedUnit, toggleSpeedUnit } = useWebSocket();
 
   return (
-    <div className="car-dashboard">
-      <div className="dashboard-grid">
+    <div className="car-dashboard" data-testid="car-dashboard">
+      <div className="dashboard-grid" data-testid="dashboard-grid">
         <RPMGauge rpm={data['RPM']} />
         <InfoPanel data={data} />
         <ControlPanel 
