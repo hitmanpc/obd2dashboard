@@ -1,6 +1,11 @@
 import React from 'react';
+import { ControlPanelProps } from '../types';
 
-const ControlPanel = ({ speedUnit, onToggleSpeedUnit, isConnected }) => {
+const ControlPanel: React.FC<ControlPanelProps> = ({ 
+  speedUnit, 
+  onToggleSpeedUnit, 
+  isConnected 
+}) => {
   return (
     <div className="controls-section">
       <div className="speed-toggle" onClick={onToggleSpeedUnit}>

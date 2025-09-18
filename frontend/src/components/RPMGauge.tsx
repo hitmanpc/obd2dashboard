@@ -1,6 +1,7 @@
 import React from 'react';
+import { RPMGaugeProps, GaugeInfo } from '../types';
 
-const getGaugeInfo = (rpm) => {
+const getGaugeInfo = (rpm: number): GaugeInfo => {
   if (rpm < 1000) return { gear: "N", color: "#4CAF50", zone: "idle" };
   if (rpm < 2500) return { gear: "1-2", color: "#2196F3", zone: "normal" };
   if (rpm < 4000) return { gear: "3-4", color: "#FFC107", zone: "mid" };
@@ -8,8 +9,8 @@ const getGaugeInfo = (rpm) => {
   return { gear: "6", color: "#F44336", zone: "redline" };
 };
 
-const RPMGauge = ({ rpm }) => {
-  const rpmValue = Math.round(parseFloat(rpm || 0));
+const RPMGauge: React.FC<RPMGaugeProps> = ({ rpm }) => {
+  const rpmValue = Math.round(parseFloat(rpm || '0'));
   const gaugeInfo = getGaugeInfo(rpmValue);
 
   return (
