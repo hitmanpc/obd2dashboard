@@ -7,7 +7,7 @@ import ControlPanel from './components/ControlPanel';
 
 console.log('React app started!');
 
-function App() {
+function App(): JSX.Element {
   const { data, speedUnit, toggleSpeedUnit } = useWebSocket();
 
   return (
