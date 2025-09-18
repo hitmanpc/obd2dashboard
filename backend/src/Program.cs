@@ -1,10 +1,9 @@
-using ObdDashboard;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using System;
-using System.Threading;
 using System.IO.Ports;
+using ObdDashboard.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
@@ -69,12 +68,12 @@ app.Map("/ws", async context =>
             try
             {
                 var data = obdService.QueryLiveData(serialPort);
-                await WebSocketHandler.Send(webSocket, data);
+                await WebSocketService.Send(webSocket, data);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error querying data: {ex.Message}");
-                await WebSocketHandler.Send(webSocket, $"Error: {ex.Message}");
+                await WebSocketService.Send(webSocket, $"Error: {ex.Message}");
                 break;
             }
             await Task.Delay(500);

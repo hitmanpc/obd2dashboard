@@ -3,9 +3,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ObdDashboard
+namespace ObdDashboard.Services
 {
-    public static class WebSocketHandler
+    public static class WebSocketService
     {
         public static async Task Send(WebSocket socket, string message)
         {

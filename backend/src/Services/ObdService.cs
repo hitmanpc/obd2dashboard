@@ -4,11 +4,19 @@ using System.IO.Ports;
 using System.Text.Json;
 using System.Threading;
 using ObdDashboard.Configuration;
+using ObdDashboard.Communication;
 
-namespace ObdDashboard
+namespace ObdDashboard.Services
 {
     public class ObdService
     {
+        private readonly AtCommandManager _atCommandManager;
+
+        public ObdService()
+        {
+            _atCommandManager = new AtCommandManager();
+        }
+
         public bool TryConnect(string portName, out SerialPort serial)
         {
             try
@@ -22,47 +30,15 @@ namespace ObdDashboard
                 serial.Open();
                 Console.WriteLine($"Port {portName} opened successfully.");
                 serial.DiscardInBuffer();
-                Console.WriteLine("Sending ELM327 initialization command...");
 
-                // Send ATI command and read response with retries
-                serial.DiscardInBuffer();
-
-                // Send command with line ending
-                serial.Write("ATI\r");
-
-                // Give it time to respond
-                Thread.Sleep(500);
-
-                // Read all available data
-                var rawResponse = serial.ReadExisting();
-                Console.WriteLine($"Raw ATI response bytes: {BitConverter.ToString(System.Text.Encoding.ASCII.GetBytes(rawResponse))}");
-
-                // Try to read more data if we don't see the full response
-                if (!rawResponse.Contains("ELM327"))
-                {
-                    Thread.Sleep(200);
-                    rawResponse += serial.ReadExisting();
-                    Console.WriteLine($"Additional data: {BitConverter.ToString(System.Text.Encoding.ASCII.GetBytes(rawResponse))}");
-                }
-
-                // Check if we got any response at all
-                if (string.IsNullOrWhiteSpace(rawResponse))
-                {
-                    Console.WriteLine("No response from ELM327.");
-                    serial.Close();
-                    return false;
-                }
-
-                Console.WriteLine($"Full raw response: '{rawResponse}'");
-
-                // Check for ELM327 in the response
-                if (rawResponse.IndexOf("ELM327", StringComparison.OrdinalIgnoreCase) >= 0)
+                // Test connection using AT command manager
+                if (_atCommandManager.TestConnection(serial))
                 {
                     Console.WriteLine("ELM327 detected successfully");
                     return true;
                 }
 
-                Console.WriteLine($"ELM327 not found in response. Response was: '{rawResponse}'");
+                Console.WriteLine("ELM327 not detected in response");
                 serial.Close();
             }
             catch (Exception ex)
@@ -76,99 +52,7 @@ namespace ObdDashboard
 
         public bool InitElm(SerialPort serial)
         {
-            try
-            {
-                Console.WriteLine("Initializing ELM327...");
-
-                // Reset the adapter
-                var resetResponse = Send(serial, "ATZ");
-                if (!resetResponse.Contains("ELM327"))
-                {
-                    Console.WriteLine("Warning: ELM327 not detected after reset");
-                    return false;
-                }
-
-                // Configure adapter settings
-                var commands = new[]
-                {
-                    "ATE0",  // Echo off
-                    "ATL0",  // Linefeeds off
-                    "ATS0",  // Spaces off
-                    "ATH0"   // Headers off
-                    // Remove ATS0 to keep spaces in responses for better compatibility
-                };
-
-                foreach (var cmd in commands)
-                {
-                    var response = Send(serial, cmd);
-                    if (response.Contains("?"))
-                    {
-                        Console.WriteLine($"Warning: Command {cmd} returned an error");
-                        return false;
-                    }
-                }
-
-                // Set protocol to automatic
-                var protocolResponse = Send(serial, "ATSP0");
-                if (protocolResponse.Contains("?"))
-                {
-                    Console.WriteLine("Warning: Failed to set protocol");
-                    return false;
-                }
-
-                Console.WriteLine("ELM327 initialization complete");
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error initializing ELM327: {ex.Message}");
-                return false;
-            }
-        }
-
-        private string Send(SerialPort serial, string command)
-        {
-            try
-            {
-                // Clear any existing data in the buffer
-                serial.DiscardInBuffer();
-
-                // Send the command with line ending
-                Console.WriteLine($"Sending command: {command}");
-                serial.Write($"{command}\r");
-
-                // Give it time to respond
-                Thread.Sleep(200);
-
-                // Read the response
-                string response = "";
-                var startTime = DateTime.Now;
-
-                // Keep reading until we get a prompt or timeout
-                while ((DateTime.Now - startTime).TotalMilliseconds < 1000)
-                {
-                    if (serial.BytesToRead > 0)
-                    {
-                        response += serial.ReadExisting();
-                        if (response.Contains(">"))
-                        {
-                            break;
-                        }
-                    }
-                    Thread.Sleep(50);
-                }
-
-                // Read any remaining data
-                response += serial.ReadExisting();
-
-                Console.WriteLine($"Command '{command}' response: '{response.Replace("\r", "\\r").Replace("\n", "\\n")}'");
-                return response;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error sending command '{command}': {ex.Message}");
-                throw;
-            }
+            return _atCommandManager.InitializeElm327(serial);
         }
 
         public string QueryLiveData(SerialPort serial, string speedUnit = "km/h")
