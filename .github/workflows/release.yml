@@ -1,0 +1,108 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18.x'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+
+    - name: Build backend
+      run: |
+        dotnet restore backend/ObdDashboard.csproj
+        dotnet publish backend/ObdDashboard.csproj --configuration Release --output backend/release
+
+    - name: Build frontend
+      run: |
+        cd frontend
+        npm ci
+        npm run build
+
+    - name: Log in to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        tags: |
+          type=ref,event=tag
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+
+    - name: Build and push backend Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./backend
+        file: ./backend/Dockerfile
+        platforms: linux/amd64,linux/arm64
+        push: true
+        tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-backend:${{ steps.meta.outputs.version }}
+        labels: ${{ steps.meta.outputs.labels }}
+
+    - name: Build and push frontend Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./frontend
+        file: ./frontend/Dockerfile
+        platforms: linux/amd64,linux/arm64
+        push: true
+        tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-frontend:${{ steps.meta.outputs.version }}
+        labels: ${{ steps.meta.outputs.labels }}
+
+    - name: Create release archives
+      run: |
+        cd backend/release
+        tar -czf ../../obd2dashboard-backend-${{ steps.meta.outputs.version }}.tar.gz .
+        cd ../../frontend/build
+        tar -czf ../../obd2dashboard-frontend-${{ steps.meta.outputs.version }}.tar.gz .
+
+    - name: Generate changelog
+      id: changelog
+      run: |
+        echo "## What's Changed" > CHANGELOG.md
+        git log $(git describe --tags --abbrev=0 HEAD^)..HEAD --pretty=format:"* %s (%h)" >> CHANGELOG.md
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        body_path: CHANGELOG.md
+        files: |
+          obd2dashboard-backend-${{ steps.meta.outputs.version }}.tar.gz
+          obd2dashboard-frontend-${{ steps.meta.outputs.version }}.tar.gz
+        draft: false
+        prerelease: ${{ contains(github.ref, 'alpha') || contains(github.ref, 'beta') || contains(github.ref, 'rc') }}

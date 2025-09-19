@@ -1,0 +1,101 @@
+name: Deploy to Raspberry Pi
+
+on:
+  workflow_dispatch:
+    inputs:
+      pi_host:
+        description: 'Raspberry Pi hostname or IP'
+        required: true
+        default: 'raspberrypi.local'
+      pi_user:
+        description: 'Raspberry Pi username'
+        required: true
+        default: 'pi'
+      force_restart:
+        description: 'Force restart containers'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  deploy-to-pi:
+    name: Deploy to Raspberry Pi
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup SSH key
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.PI_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ github.event.inputs.pi_host }} >> ~/.ssh/known_hosts
+
+    - name: Check Raspberry Pi connection
+      run: |
+        ssh ${{ github.event.inputs.pi_user }}@${{ github.event.inputs.pi_host }} "echo 'Connected to Raspberry Pi successfully'"
+
+    - name: Check Docker installation on Pi
+      run: |
+        ssh ${{ github.event.inputs.pi_user }}@${{ github.event.inputs.pi_host }} "docker --version && docker-compose --version"
+
+    - name: Copy docker-compose files to Pi
+      run: |
+        scp docker-compose.yml ${{ github.event.inputs.pi_user }}@${{ github.event.inputs.pi_host }}:/home/${{ github.event.inputs.pi_user }}/obd2dashboard/
+        # Copy production override if it exists
+        if [ -f docker-compose.prod.yml ]; then
+          scp docker-compose.prod.yml ${{ github.event.inputs.pi_user }}@${{ github.event.inputs.pi_host }}:/home/${{ github.event.inputs.pi_user }}/obd2dashboard/
+        fi
+
+    - name: Deploy application on Raspberry Pi
+      run: |
+        ssh ${{ github.event.inputs.pi_user }}@${{ github.event.inputs.pi_host }} << 'EOF'
+          cd /home/${{ github.event.inputs.pi_user }}/obd2dashboard
+          
+          # Pull latest ARM64 images
+          export REGISTRY=${{ env.REGISTRY }}
+          export IMAGE_NAME=${{ env.IMAGE_NAME }}
+          
+          # Stop existing containers if force restart is requested
+          if [ "${{ github.event.inputs.force_restart }}" = "true" ]; then
+            docker-compose down
+          fi
+          
+          # Pull latest images
+          docker-compose pull
+          
+          # Start services
+          docker-compose up -d
+          
+          # Check if services are running
+          sleep 10
+          docker-compose ps
+          
+          # Show logs for verification
+          docker-compose logs --tail=20
+        EOF
+
+    - name: Verify deployment
+      run: |
+        echo "Waiting for services to be ready..."
+        sleep 30
+        
+        # Check if the backend is responding
+        ssh ${{ github.event.inputs.pi_user }}@${{ github.event.inputs.pi_host }} "curl -f http://localhost:8000/health || echo 'Backend health check failed'"
+        
+        # Check if the frontend is serving
+        ssh ${{ github.event.inputs.pi_user }}@${{ github.event.inputs.pi_host }} "curl -f http://localhost:3000 || echo 'Frontend health check failed'"
+
+    - name: Display deployment information
+      run: |
+        echo "🚀 Deployment completed!"
+        echo "📍 Raspberry Pi: ${{ github.event.inputs.pi_host }}"
+        echo "🌐 Frontend: http://${{ github.event.inputs.pi_host }}:3000"
+        echo "🔌 Backend: http://${{ github.event.inputs.pi_host }}:8000"
+        echo "📊 OBD2 Dashboard is now running on your Raspberry Pi!"
