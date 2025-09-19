@@ -1,0 +1,36 @@
+name: Deploy to Raspberry Pi (Self-Hosted)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  deploy-local:
+    name: Deploy Locally on Pi
+    runs-on: self-hosted  # Runs directly on your Raspberry Pi
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Stop existing containers
+      run: |
+        cd ~/obd2dashboard
+        docker-compose down || true
+
+    - name: Pull latest images
+      run: |
+        cd ~/obd2dashboard
+        docker-compose pull
+
+    - name: Start services
+      run: |
+        cd ~/obd2dashboard
+        docker-compose up -d
+
+    - name: Verify deployment
+      run: |
+        sleep 10
+        curl -f http://localhost:3000 || echo "Frontend not ready yet"
+        curl -f http://localhost:8000/health || echo "Backend not ready yet"

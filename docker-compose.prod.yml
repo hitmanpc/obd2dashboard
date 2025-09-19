@@ -1,0 +1,57 @@
+# Production docker-compose for Raspberry Pi deployment
+services:
+  obd_backend:
+    image: ghcr.io/${GITHUB_REPOSITORY:-hitmanpc/obd2dashboard}-backend:latest
+    container_name: obd_backend
+    environment:
+      - OBD_PORT=/dev/ttyUSB0
+      - ASPNETCORE_ENVIRONMENT=Production
+      # Use /dev/serial0 or /dev/ttyAMA0 for Raspberry Pi GPIO UART
+      # Use /dev/ttyUSB0 for USB-to-OBD2 adapters
+    ports:
+      - "8000:8000"
+    privileged: true
+    devices:
+      - "/dev/ttyUSB0:/dev/ttyUSB0"  # Adjust based on your OBD2 adapter
+    volumes:
+      - ./logs:/app/logs  # Persist logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  react_frontend:
+    image: ghcr.io/${GITHUB_REPOSITORY:-hitmanpc/obd2dashboard}-frontend:latest
+    container_name: react_frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      obd_backend:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: Reverse proxy for production
+  nginx:
+    image: nginx:alpine
+    container_name: obd_nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro  # SSL certificates if needed
+    depends_on:
+      - react_frontend
+      - obd_backend
+    restart: unless-stopped
+    profiles:
+      - with-nginx  # Use with: docker-compose --profile with-nginx up
