@@ -92,8 +92,15 @@ namespace ObdDashboard.Services
 
                 Console.WriteLine($"Parsing cleaned response for {pidConfig.Command}: {clean}");
 
+                // Determine mode from command
+                string mode = pidConfig.Command.Substring(0, 2);
                 string pidSuffix = pidConfig.Command.Substring(2);
-                string searchPattern = $"41{pidSuffix}";
+                
+                // Get response header using configuration
+                string responseHeader = ObdModeConfiguration.GetResponseHeader(mode);
+
+                string searchPattern = $"{responseHeader}{pidSuffix}";            
+                // string searchPattern = $"62{pidSuffix}";            
                 int pidIndex = clean.IndexOf(searchPattern);
 
                 if (pidIndex == -1)

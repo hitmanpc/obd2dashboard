@@ -33,7 +33,7 @@ export interface ControlPanelProps {
 }
 
 export interface GaugeInfo {
-  gear: string;
+  // gear: string;
   color: string;
   zone: string;
 }

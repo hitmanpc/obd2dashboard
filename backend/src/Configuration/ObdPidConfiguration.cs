@@ -87,7 +87,7 @@ namespace ObdDashboard.Configuration
                     IsEnabled = false, // Disabled by default
                     Parser = ParseMaf
                 }
-            }
+            },
         };
 
         // Parser functions
