@@ -1,26 +1,22 @@
 import React from 'react';
 import './Dashboard.css';
 import { useWebSocket } from './hooks/useWebSocket';
-import RPMGauge from './components/RPMGauge';
-import InfoPanel from './components/InfoPanel';
-import ControlPanel from './components/ControlPanel';
+import MustangDashboard from './components/MustangDashboard';
 
-console.log('React app started!');
+console.log('React app updated started!');
 
 function App(): JSX.Element {
-  const { data, speedUnit, toggleSpeedUnit } = useWebSocket();
+  const { data, speedUnit } = useWebSocket();
 
   return (
-    <div className="car-dashboard" data-testid="car-dashboard">
-      <div className="dashboard-grid" data-testid="dashboard-grid">
-        <RPMGauge rpm={data['RPM']} />
-        <InfoPanel data={data} />
-        <ControlPanel 
-          speedUnit={speedUnit}
-          onToggleSpeedUnit={toggleSpeedUnit}
-          isConnected={Object.keys(data).length > 0}
-        />
-      </div>
+    <div style={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      height: '100vh',
+      background: '#000',
+    }}>
+      <MustangDashboard data={data} speedUnit={speedUnit} />
     </div>
   );
 }
