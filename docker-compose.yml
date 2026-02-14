@@ -17,4 +17,7 @@ services:
       - "3000:3000"
     depends_on:
       - obd_backend
-    # prvileged: true
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+    # privileged: true
