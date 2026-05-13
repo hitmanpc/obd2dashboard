@@ -3,7 +3,7 @@ import './Dashboard.css';
 import { useWebSocket } from './hooks/useWebSocket';
 import MustangDashboard from './components/MustangDashboard';
 
-console.log('React app updated started!');
+console.log('Testing again?');
 
 function App(): JSX.Element {
   const { data, speedUnit } = useWebSocket();

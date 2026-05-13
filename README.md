@@ -2,113 +2,362 @@
 
 ## 📋 Overview
 
-**OBD2 Dashboard** is a simple vehicle monitoring application that provides real-time insights into your vehicle's performance using OBD2 data.
+**OBD2 Dashboard** is a real-time vehicle monitoring application that provides live insights into your vehicle's performance using OBD2 data. Built with .NET 8.0 backend and React frontend, it features a Mustang-themed dashboard with WebSocket-based real-time updates.
 
 ## ✨ Features
 
-- 📊 Real-time vehicle diagnostics
-- 🖥️ Interactive dashboard with key performance metrics
-- 🔧 Support for OBD2 emulation and data retrieval
+- 📊 Real-time vehicle diagnostics via WebSocket
+- 🎨 Mustang-themed interactive dashboard with custom gauges
+- 🏎️ RPM gauge, speedometer, coolant temperature, and gear indicator
+- 🔌 Direct ELM327 OBD2 adapter support
+- 🐳 Docker containerized deployment
+- 📱 Raspberry Pi deployment support
+- 🔧 OBD2 emulator for testing without a vehicle
 
 ## 🛠️ Prerequisites
 
-- ![C#](https://img.shields.io/badge/.NET-8.0+-purple)  
-- ![Python](https://img.shields.io/badge/Python-3.8+-blue)
-- ![Node.js](https://img.shields.io/badge/Node.js-14+-green)
-- ![React](https://img.shields.io/badge/React-16+-lightblue)
-- [![OBD2 Emulator](https://img.shields.io/badge/ELM327-emulator-blue)](https://github.com/Ircama/ELM327-emulator)
-- [socat](http://www.dest-unreach.org/socat/) (for virtual serial port emulation, required by `emulator/tcp2UsbScript.sh`)
-- bash shell (for running `emulator/tcp2UsbScript.sh`)
-- Docker & Docker Compose (for containerized setup)
+- ![.NET](https://img.shields.io/badge/.NET-8.0-purple) for backend
+- ![Node.js](https://img.shields.io/badge/Node.js-18+-green) for frontend
+- ![React](https://img.shields.io/badge/React-18+-lightblue) with TypeScript
+- ![Python](https://img.shields.io/badge/Python-3.8+-blue) (for OBD2 emulator only)
+- [![OBD2 Emulator](https://img.shields.io/badge/ELM327-emulator-blue)](https://github.com/Ircama/ELM327-emulator) (optional, for testing)
+- [socat](http://www.dest-unreach.org/socat/) (for virtual serial port emulation)
+- Docker & Docker Compose (for containerized deployment)
+- ELM327-compatible OBD2 adapter (for real vehicle connection)
+
+## 🏗️ Architecture
+
+- **Backend**: .NET 8.0 C# with WebSocket communication for real-time data streaming
+- **Frontend**: React 18 with TypeScript and custom dashboard components
+- **Communication**: AT command manager for OBD2 protocol handling
+- **Deployment**: Docker Compose for containerized services
+- **Target Platforms**: Linux (x64, ARM), Raspberry Pi, Windows (development)
 
 ## 📦 Setup and Installation
 
-### Docker Compose (docker-compose.override.yml)
+### Quick Start with Docker Compose
 
+1. **Clone the repository**
+```bash
+git clone https://github.com/hitmanpc/obd2dashboard.git
+cd obd2dashboard
+```
+
+2. **Start all services** (backend, frontend, and emulator)
 ```bash
 docker-compose up --build -d
 ```
 
-### Docker Compose Down
+3. **Access the dashboard**
+- Frontend: http://localhost:3000
+- Backend WebSocket: ws://localhost:8000
+
+### Stop Services
 
 ```bash
 docker-compose down
 ```
 
-## 🚀 Running the Emulator outside of docker (aka on host machine)
+### Production Deployment
+
+For production deployment with nginx reverse proxy:
+```bash
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+```
+
+### Raspberry Pi Deployment
+
+See the [Quick Start Guide](QUICKSTART.md) for streamlined Raspberry Pi deployment, or [detailed Raspberry Pi deployment docs](docs/raspberry-pi-deployment.md) for step-by-step instructions.
+
+```bash
+# One-command deployment on Raspberry Pi
+curl -fsSL https://raw.githubusercontent.com/hitmanpc/obd2dashboard/main/deploy-pi.sh -o deploy-pi.sh
+chmod +x deploy-pi.sh
+./deploy-pi.sh
+```
+
+## 🚀 Development Setup
+
+### Running Backend Locally (without Docker)
+
+1. **Navigate to backend directory**
+```bash
+cd backend
+```
+
+2. **Build the project**
+```bash
+dotnet build
+```
+
+3. **Run the application**
+```bash
+dotnet run
+```
+
+Or use the VS Code tasks:
+- Press `Ctrl+Shift+B` to build
+- Use "watch" task for auto-reload during development
+
+### Running Frontend Locally (without Docker)
+
+1. **Navigate to frontend directory**
+```bash
+cd frontend
+```
+
+2. **Install dependencies**
+```bash
+npm install
+```
+
+3. **Start development server**
+```bash
+npm start
+```
+
+The frontend will be available at http://localhost:3000
+
+## 🧪 Running with OBD2 Emulator (No Vehicle Required)
+
 ### Start OBD2 Emulator
 
-Before starting the application, start the OBD2 emulator:
+Before starting the application, start the OBD2 emulator to simulate vehicle data:
+
 ```bash
-bin/python -m elm -n 35000 --daemon
+cd emulator
+python -m elm -n 35000 --daemon
 ```
-should see "ELM327-emulator daemon service STARTED on  /dev/pts/<x>" where <x> is a number.
-to see the process running:
+
+You should see: `ELM327-emulator daemon service STARTED on /dev/pts/<x>`
+
+**Check emulator status:**
 ```bash
 ps aux | grep elm
 ```
 
-kill the process:
+**Stop emulator:**
 ```bash
-kill <x> where <x> is the number of the pid
+kill <pid>
 ```
 
-### Verify backend is running
+### Using Virtual Serial Port (tcp2UsbScript.sh)
 
-Open your browser and navigate to:
- http://localhost:8000/docs
-
-### Verify frontend is running
-
-Open your browser and navigate to:
- http://localhost:3000
-
-you should see something like this:
-![image](/docs/images/GaugeScreenshot.png)
-
-## 🚀 Running the Emulator with Virtual Serial Port (tcp2UsbScript.sh) **Alpha, Not really tested yet **
-
-To start the OBD2 emulator and create a virtual serial port using socat, run the following script:
+To create a virtual serial port mapped to the emulator:
 
 ```bash
 cd emulator
 ./tcp2UsbScript.sh
 ```
 
-- This script will:
-  - Start the ELM327 emulator as a background daemon on TCP port 35000.
-  - Create a virtual serial port at `/virtual/usb1` mapped to the emulator using socat.
-  - Monitor and automatically restart the emulator if it stops.
-  - Clean up processes on exit.
+This script will:
+- Start the ELM327 emulator as a daemon on TCP port 35000
+- Create a virtual serial port at `/virtual/usb1` using socat
+- Monitor and auto-restart the emulator if it crashes
+- Clean up processes on exit
 
-You should see output indicating both the emulator and socat are running, and the virtual serial port is available.
+## 🔌 Connecting to Real OBD2 Adapter
+
+1. **Connect your ELM327 OBD2 adapter** via USB to your computer/Raspberry Pi
+2. **Find the device**: `ls /dev/ttyUSB*` or `ls /dev/ttyACM*`
+3. **Set the OBD_PORT environment variable**:
+   ```bash
+   export OBD_PORT=/dev/ttyUSB0
+   ```
+4. **Update docker-compose.yml** to map the correct device:
+   ```yaml
+   devices:
+     - "/dev/ttyUSB0:/dev/ttyUSB0"
+   ```
+
+## ✅ Verify Installation
+
+### Check Backend
+Open your browser and navigate to:
+```
+http://localhost:8000
+```
+
+You should see WebSocket connection status.
+
+### Check Frontend
+Open your browser and navigate to:
+```
+http://localhost:3000
+```
+
+You should see the Mustang-themed dashboard:
+
+![Mustang Dashboard](/docs/images/GaugeScreenshot.png)
 
 ## 🔧 Configuration
 
-- Modify `backend/server.py` for backend logic
-- Modify `frontend/src/App.js` for frontend logic and UI
+### Backend Configuration
+
+**Main files:**
+- [`backend/src/Program.cs`](backend/src/Program.cs) - Application entry point and WebSocket setup
+- [`backend/src/Services/ObdService.cs`](backend/src/Services/ObdService.cs) - OBD2 communication service
+- [`backend/src/Commands/AtCommands.cs`](backend/src/Commands/AtCommands.cs) - AT command definitions
+- [`backend/appsettings.json`](backend/appsettings.json) - Application configuration
+
+**Environment Variables:**
+- `OBD_PORT` - Serial port for OBD2 adapter (default: `/virtual/usb1`)
+
+### Frontend Configuration
+
+**Main files:**
+- [`frontend/src/components/MustangDashboard.tsx`](frontend/src/components/MustangDashboard.tsx) - Main dashboard UI
+- [`frontend/src/hooks/useWebSocket.ts`](frontend/src/hooks/useWebSocket.ts) - WebSocket connection hook
+- [`frontend/src/types/index.ts`](frontend/src/types/index.ts) - TypeScript type definitions
+
+**Customize the dashboard:**
+- Modify gauge components in [`frontend/src/components/`](frontend/src/components/)
+- Update styling in `*.css` files
+- Configure OBD PIDs in backend configuration
+
+### OBD2 PID Configuration
+
+Configure which OBD2 parameters to query in:
+- [`backend/src/Configuration/ObdPidConfiguration.cs`](backend/src/Configuration/ObdPidConfiguration.cs)
 
 ## 🛠️ Troubleshooting
 
-- ❗ Ensure the OBD2 emulator is running before starting the application
-- ❗ Check that all dependencies are correctly installed
-- ❗ Verify Python and Node.js versions meet the minimum requirements
+### OBD2 Connection Issues
+
+- ❗ **Cannot connect to OBD2 adapter**
+  - Verify device is connected: `ls /dev/ttyUSB*` or `ls /dev/ttyACM*`
+  - Check permissions: `sudo chmod 666 /dev/ttyUSB0`
+  - Add user to dialout group: `sudo usermod -aG dialout $USER && sudo reboot`
+  - Verify OBD_PORT environment variable is correct
+
+- ❗ **Emulator not working**
+  - Ensure Python ELM327 emulator is installed: `pip install ELM327-emulator`
+  - Check if emulator is running: `ps aux | grep elm`
+  - Verify virtual serial port exists: `ls /virtual/usb1`
+  - Ensure socat is installed: `sudo apt-get install socat`
+
+### Backend Issues
+
+- ❗ **Backend won't start**
+  - Verify .NET 8.0 SDK is installed: `dotnet --version`
+  - Check for port conflicts on port 8000
+  - Review logs: `docker-compose logs backend`
+  - Ensure serial port device is accessible
+
+- ❗ **WebSocket connection failed**
+  - Check backend is running and accessible
+  - Verify firewall allows WebSocket connections
+  - Ensure CORS is properly configured for your domain
+
+### Frontend Issues
+
+- ❗ **Dashboard not loading**
+  - Verify Node.js is installed: `node --version`
+  - Clear npm cache: `npm cache clean --force`
+  - Delete node_modules and reinstall: `rm -rf node_modules && npm install`
+  - Check for port conflicts on port 3000
+
+- ❗ **No data displayed**
+  - Verify WebSocket connection in browser console
+  - Check backend logs for OBD2 communication errors
+  - Ensure OBD2 adapter/emulator is responding
+
+### Docker Issues
+
+- ❗ **Permission denied**
+  - Add user to docker group: `sudo usermod -aG docker $USER`
+  - Reboot system: `sudo reboot`
+
+- ❗ **Cannot access devices in container**
+  - Verify device mapping in docker-compose.yml
+  - Use `--privileged` flag if necessary (not recommended for production)
+
+### Raspberry Pi Specific
+
+- ❗ **Insufficient memory**
+  - Increase swap size
+  - Use production build instead of development: `docker-compose -f docker-compose.prod.yml up -d`
+
+- ❗ **Slow performance**
+  - Ensure using ARM-optimized images
+  - Consider pre-building on faster machine and deploying image
+
+For more help, check the [Raspberry Pi deployment guide](docs/raspberry-pi-deployment.md) or create an issue on GitHub.
+
+## 📁 Project Structure
+
+```
+obd2dashboard/
+├── backend/              # .NET 8.0 C# backend
+│   ├── src/
+│   │   ├── Program.cs              # Application entry point
+│   │   ├── Commands/               # AT command definitions
+│   │   ├── Communication/          # OBD2 communication layer
+│   │   ├── Configuration/          # OBD PID configurations
+│   │   └── Services/               # ObdService, WebSocketService
+│   ├── appsettings.json           # App configuration
+│   └── ObdDashboard.csproj        # .NET project file
+├── frontend/             # React TypeScript frontend
+│   ├── src/
+│   │   ├── components/            # Dashboard UI components
+│   │   │   └── MustangDashboard.tsx
+│   │   ├── hooks/                 # React hooks (WebSocket)
+│   │   └── types/                 # TypeScript definitions
+│   └── package.json
+├── emulator/             # OBD2 emulator for testing
+│   ├── tcp2UsbScript.sh          # Virtual serial port setup
+│   └── Dockerfile
+├── docs/                 # Documentation
+│   └── raspberry-pi-deployment.md
+├── docker-compose.yml    # Development setup
+├── docker-compose.prod.yml        # Production setup
+├── deploy-pi.sh          # Raspberry Pi deployment script
+└── README.md
+```
 
 ## 🤝 Contributing
 
-1. 🍴 Fork the repository
-2. 🌿 Create a feature branch
-3. 💾 Commit your changes
-4. 📤 Push to the branch
-5. 🔀 Create a Pull Request
+We welcome contributions! Here's how to get started:
+
+1. 🍴 **Fork the repository**
+2. 🌿 **Create a feature branch**
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+3. 💾 **Commit your changes**
+   ```bash
+   git commit -m "Add your feature description"
+   ```
+4. 📤 **Push to the branch**
+   ```bash
+   git push origin feature/your-feature-name
+   ```
+5. 🔀 **Create a Pull Request**
+
+### Development Guidelines
+
+- Follow C# coding conventions for backend (.NET guidelines)
+- Use TypeScript and follow React best practices for frontend
+- Write meaningful commit messages
+- Test your changes with both emulator and real OBD2 adapter (if possible)
+- Update documentation as needed
 
 ## 📄 License
 
 This project is licensed under the [MIT License](./LICENSE). You are free to use, modify, and distribute this software, provided you give appropriate credit.
 
+## 🔗 Resources
+
+- [ELM327 Command Reference](https://www.elmelectronics.com/wp-content/uploads/2017/01/ELM327DS.pdf)
+- [OBD2 PIDs Wikipedia](https://en.wikipedia.org/wiki/OBD-II_PIDs)
+- [ELM327 Emulator](https://github.com/Ircama/ELM327-emulator)
+- [.NET 8.0 Documentation](https://learn.microsoft.com/en-us/dotnet/)
+- [React Documentation](https://react.dev/)
+
 ## 📞 Contact
 
-don@donbowman.info
+**Email**: don@donbowman.info  
+**Issues**: https://github.com/hitmanpc/obd2dashboard/issues
 
 ---
 
