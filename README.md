@@ -241,7 +241,7 @@ Configure which OBD2 parameters to query in:
 - ❗ **Backend won't start**
   - Verify .NET 8.0 SDK is installed: `dotnet --version`
   - Check for port conflicts on port 8000
-  - Review logs: `docker-compose logs backend`
+  - Review logs: `docker-compose logs obd_backend`
   - Ensure serial port device is accessible
 
 - ❗ **WebSocket connection failed**
