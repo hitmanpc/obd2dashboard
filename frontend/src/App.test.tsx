@@ -1,5 +1,6 @@
+/* eslint-disable testing-library/no-container */
 /* eslint-disable testing-library/no-node-access */
-import { getByRole, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import App from './App';
 import BottomInfoBar from './components/BottomInfoBar';
 import CoolantBar from './components/CoolantBar';
@@ -37,7 +38,7 @@ describe('App', () => {
   test('renders the dashboard with websocket data', () => {
     const { container } = render(<App />);
 
-    expect(screen.getByRole('.mustang-dashboard')).toBeInTheDocument();
+    expect(container.querySelector('.mustang-dashboard')).toBeInTheDocument();
     expect(screen.getByText('RPM × 1000')).toBeInTheDocument();
     expect(screen.getByText('KM/H')).toBeInTheDocument();
     expect(screen.getByText('1964.5 km')).toBeInTheDocument();
@@ -51,11 +52,11 @@ describe('MustangDashboard', () => {
       <MustangDashboard data={mockDashboardData} speedUnit="km/h" />
     );
 
-    expect(screen.getByRole('.mustang-dashboard')).toBeInTheDocument();
-    expect(screen.getByRole('.dash-left')).toBeInTheDocument();
-    expect(screen.getByRole('.dash-center')).toBeInTheDocument();
-    expect(screen.getByRole('.dash-right')).toBeInTheDocument();
-    expect(screen.getByRole('.mini-gauges-row')).toBeInTheDocument();
+    expect(container.querySelector('.mustang-dashboard')).toBeInTheDocument();
+    expect(container.querySelector('.dash-left')).toBeInTheDocument();
+    expect(container.querySelector('.dash-center')).toBeInTheDocument();
+    expect(container.querySelector('.dash-right')).toBeInTheDocument();
+    expect(container.querySelector('.mini-gauges-row')).toBeInTheDocument();
   });
 
   test('renders parsed OBD values throughout the dashboard', () => {
@@ -89,7 +90,7 @@ describe('MustangDashboard', () => {
       />
     );
 
-    const coolantFill = screen.getByRole('.dash-left div div div');
+    const coolantFill = container.querySelector('.dash-left div div div');
     expect(coolantFill).toHaveStyle({ width: '100%', background: '#ff3333' });
   });
 });
@@ -124,7 +125,7 @@ describe('MiniGauge', () => {
       />
     );
 
-    expect(screen.getByRole('svg')).toBeInTheDocument();
+    expect(container.querySelector('svg')).toBeInTheDocument();
     expect(screen.getByText(iconText)).toBeInTheDocument();
     expect(screen.getByText(valueText)).toBeInTheDocument();
   });
@@ -134,7 +135,8 @@ describe('MiniGauge', () => {
       <MiniGauge label="°F" icon="oil" value={50} min={100} max={300} />
     );
 
-    expect(screen.getByRole('path')).toHaveLength(1);
+    const paths = container.querySelectorAll('path');
+    expect(paths).toHaveLength(1);
     expect(screen.getByText('50°F')).toBeInTheDocument();
   });
 });
@@ -171,7 +173,7 @@ describe('BottomInfoBar', () => {
   });
 
   test('renders the selected gear and fuel level state', () => {
-    render(
+    const { container } = render(
       <BottomInfoBar
         odometer={1964.5}
         gearSelector="S"
@@ -187,11 +189,16 @@ describe('BottomInfoBar', () => {
 
     expect(screen.getByText('S')).toHaveStyle({
       color: '#ff8800',
-      fontWeight: '900',
+      fontWeight: 900,
     });
     expect(screen.getByText('F')).toBeInTheDocument();
-    expect(screen.getByText('E')).toBeInTheDocument();
-    expect(screen.getByText('E').nextElementSibling?.firstChild).toHaveStyle({
+    const eElements = screen.getAllByText('E');
+    expect(eElements.length).toBeGreaterThanOrEqual(1);
+    
+    // Find the fuel bar fill element: E -> bar container -> fill
+    const eFuelGauge = eElements.find(el => el.nextElementSibling?.nextElementSibling?.textContent === 'F');
+    const fuelBarFill = eFuelGauge?.nextElementSibling?.firstElementChild as HTMLElement;
+    expect(fuelBarFill).toHaveStyle({
       width: '10%',
       background: '#ff3333',
     });
@@ -202,7 +209,8 @@ describe('RPMArc', () => {
   test('renders tachometer ticks and label', () => {
     const { container } = render(<RPMArc rpm={3500} maxRpm={8000} />);
 
-    expect(screen.getByRole('svg')).toHaveAttribute('viewBox', '0 0 300 300');
+    const svg = container.querySelector('svg');
+    expect(svg).toHaveAttribute('viewBox', '0 0 300 300');
     expect(screen.getByText('RPM × 1000')).toBeInTheDocument();
     expect(screen.getByText('8')).toBeInTheDocument();
   });
@@ -210,13 +218,15 @@ describe('RPMArc', () => {
   test('does not draw active arcs at zero RPM', () => {
     const { container } = render(<RPMArc rpm={0} maxRpm={8000} />);
 
-    expect(screen.getByRole('path')).toHaveLength(1);
+    const paths = container.querySelectorAll('path');
+    expect(paths).toHaveLength(1);
   });
 
   test('draws normal and redline arcs above redline', () => {
     const { container } = render(<RPMArc rpm={8000} maxRpm={8000} />);
 
-    expect(screen.getByRole('path')).toHaveLength(3);
+    const paths = container.querySelectorAll('path');
+    expect(paths).toHaveLength(3);
   });
 });
 
@@ -226,7 +236,8 @@ describe('SpeedArc', () => {
       <SpeedArc speed={100} maxSpeed={160} unit="km/h" />
     );
 
-    expect(screen.getByRole('svg')).toHaveAttribute('viewBox', '0 0 300 300');
+    const svg = container.querySelector('svg');
+    expect(svg).toHaveAttribute('viewBox', '0 0 300 300');
     expect(screen.getByText('KM/H')).toBeInTheDocument();
     expect(screen.getAllByText('100').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('160')).toBeInTheDocument();
@@ -245,7 +256,8 @@ describe('SpeedArc', () => {
       <SpeedArc speed={0} maxSpeed={160} unit="km/h" />
     );
 
-    expect(screen.getByRole('path')).toHaveLength(1);
+    const paths = container.querySelectorAll('path');
+    expect(paths).toHaveLength(1);
     expect(screen.getAllByText('0').length).toBeGreaterThanOrEqual(1);
   });
 });
@@ -263,12 +275,13 @@ describe('CoolantBar', () => {
       <CoolantBar value={100} min={100} max={260} />
     );
 
-    const fill = () => screen.getByText('C').nextElementSibling?.firstElementChild;
+    // Navigate from C to the fill div
+    const getFill = () => screen.getByText('C').nextElementSibling?.firstElementChild as HTMLElement;
 
-    expect(fill()).toHaveStyle({ width: '0%', background: '#2288dd' });
+    expect(getFill()).toHaveStyle({ width: '0%', background: '#2288dd' });
 
     rerender(<CoolantBar value={260} min={100} max={260} />);
 
-    expect(fill()).toHaveStyle({ width: '100%', background: '#ff3333' });
+    expect(getFill()).toHaveStyle({ width: '100%', background: '#ff3333' });
   });
 });
