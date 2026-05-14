@@ -76,8 +76,8 @@ describe('MustangDashboard', () => {
     expect(screen.getAllByText('D')).toHaveLength(2);
     expect(screen.getAllByText('0').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('MPH')).toBeInTheDocument();
-    expect(screen.getByText('1964.5 mls')).toBeInTheDocument();
-    expect(screen.getByText('289 mls to E')).toBeInTheDocument();
+    expect(screen.getByText('1964.5 mi')).toBeInTheDocument();
+    expect(screen.getByText('289 mi to E')).toBeInTheDocument();
   });
 
   test('accepts legacy coolant temperature key', () => {
@@ -165,8 +165,8 @@ describe('BottomInfoBar', () => {
       />
     );
 
-    expect(screen.getByText('1220.5 mls')).toBeInTheDocument();
-    expect(screen.getByText('180 mls to E')).toBeInTheDocument();
+    expect(screen.getByText('1220.5 mi')).toBeInTheDocument();
+    expect(screen.getByText('180 mi to E')).toBeInTheDocument();
   });
 
   test('renders the selected gear and fuel level state', () => {
