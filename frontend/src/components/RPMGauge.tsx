@@ -2,11 +2,9 @@ import React from 'react';
 import { RPMGaugeProps, GaugeInfo } from '../types';
 
 const getGaugeInfo = (rpm: number): GaugeInfo => {
-  if (rpm < 1000) return { gear: "N", color: "#4CAF50", zone: "idle" };
-  if (rpm < 2500) return { gear: "1-2", color: "#2196F3", zone: "normal" };
-  if (rpm < 4000) return { gear: "3-4", color: "#FFC107", zone: "mid" };
-  if (rpm < 5500) return { gear: "5", color: "#FF5722", zone: "high" };
-  return { gear: "6", color: "#F44336", zone: "redline" };
+  if(rpm < 6000) return { color: "#438bceff", zone: "normal" };
+  if (rpm < 6500) return { color: "#FF5722", zone: "high" };
+  return {color: "#F44336", zone: "redline" };
 };
 
 const RPMGauge: React.FC<RPMGaugeProps> = ({ rpm }) => {
@@ -27,16 +25,16 @@ const RPMGauge: React.FC<RPMGaugeProps> = ({ rpm }) => {
           fill="none"
           stroke={gaugeInfo.color}
           strokeWidth="20"
-          strokeDasharray={`${(rpmValue / 6000) * (2 * Math.PI * 90)}, ${
+          strokeDasharray={`${(rpmValue / 9000) * (2 * Math.PI * 90)}, ${
             2 * Math.PI * 90
           }`}
         />
         <text x="100" y="100" textAnchor="middle" className="rpm-text">
           {rpmValue}
         </text>
-        <text x="100" y="130" textAnchor="middle" className="gear-text">
+        {/* <text x="100" y="130" textAnchor="middle" className="gear-text">
           {gaugeInfo.gear}
-        </text>
+        </text> */}
       </svg>
     </div>
   );

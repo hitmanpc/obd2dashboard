@@ -8,7 +8,7 @@ WORKDIR /src
 COPY ObdDashboard.csproj ./
 RUN dotnet restore
 
-COPY . ./
+COPY src/ ./src/
 RUN dotnet publish -c Release -o /app/publish
 
 FROM base AS final

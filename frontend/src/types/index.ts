@@ -5,6 +5,15 @@ export interface ObdData {
   Throttle?: string;
   'Coolant Temp'?: string;
   CoolantTemp?: string;
+  OilTemp?: string;
+  TransTemp?: string;
+  EngineTemp?: string;
+  Gear?: string;
+  DriveMode?: string;
+  Odometer?: string;
+  FuelLevel?: string;
+  RangeToEmpty?: string;
+  GearSelector?: string;
   SpeedUnit?: string;
   timestamp?: string;
   [key: string]: string | undefined;
@@ -33,7 +42,6 @@ export interface ControlPanelProps {
 }
 
 export interface GaugeInfo {
-  gear: string;
   color: string;
   zone: string;
 }

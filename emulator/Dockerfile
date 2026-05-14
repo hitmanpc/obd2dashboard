@@ -1,5 +1,5 @@
 # Use an official Python runtime as a base image
-FROM python:3.13-slim-bullseye
+FROM python:3.12-slim
 
 # Set working directory
 WORKDIR /app
@@ -12,14 +12,22 @@ RUN apt-get update && apt-get install -y \
     git \
     tini \
     procps \
+    gcc \
+    python3-dev \
+    build-essential \
     # socat \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# Install setuptools with pkg_resources support BEFORE installing requirements
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir "setuptools<70.0.0" wheel
+
+# Set environment variable to use system setuptools instead of isolated build env
+ENV PIP_NO_BUILD_ISOLATION=1
 
 # Install Python dependencies
-
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --no-build-isolation -r requirements.txt 
 
 # Expose port (default is 35000 but change if needed)
 EXPOSE 35000
