@@ -13,7 +13,7 @@ const BottomInfoBar: React.FC<Props> = ({
   odometer, gearSelector, rangeToEmpty, fuelLevel, speedUnit,
 }) => {
   const gears = ['P', 'R', 'N', 'D', 'S'];
-  const distUnit = speedUnit === 'mph' ? 'mls' : 'km';
+  const distUnit = speedUnit === 'mph' ? 'mi' : 'km';
 
   return (
     <div style={{
