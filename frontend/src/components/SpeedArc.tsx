@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { SpeedUnit } from '../types';
 
 interface Props {
@@ -8,7 +8,35 @@ interface Props {
   unit: SpeedUnit;
 }
 
+const LERP = 0.14; // per-frame convergence factor (~60 fps → ~0.5 s to settle)
+
 const SpeedArc: React.FC<Props> = ({ speed, maxSpeed, unit }) => {
+  const [displaySpeed, setDisplaySpeed] = useState(speed);
+  const animatedRef = useRef(speed);
+  const rafRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    const target = speed;
+    const tick = () => {
+      const current = animatedRef.current;
+      const diff = target - current;
+      if (Math.abs(diff) < 0.05) {
+        animatedRef.current = target;
+        setDisplaySpeed(target);
+        return;
+      }
+      const next = current + diff * LERP;
+      animatedRef.current = next;
+      setDisplaySpeed(next);
+      rafRef.current = requestAnimationFrame(tick);
+    };
+    if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(tick);
+    return () => {
+      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+    };
+  }, [speed]);
+
   const cx = 150, cy = 150;
   const outerR = 130;     // outer edge of the fill area
   const innerR = 68;      // inner circle radius (center display)
@@ -18,7 +46,7 @@ const SpeedArc: React.FC<Props> = ({ speed, maxSpeed, unit }) => {
   const startAngle = 135;
   const endAngle = 405;
   const sweep = endAngle - startAngle;
-  const speedFraction = Math.min(speed / maxSpeed, 1);
+  const speedFraction = Math.min(displaySpeed / maxSpeed, 1);
   const currentAngle = startAngle + speedFraction * sweep;
 
   const toRad = (deg: number) => (deg * Math.PI) / 180;
@@ -166,10 +194,7 @@ const SpeedArc: React.FC<Props> = ({ speed, maxSpeed, unit }) => {
         <path
           d={wedgePath(startAngle, currentAngle, outerR, innerR + 2)}
           fill="url(#speedWedgeGrad)"
-          style={{
-            filter: 'url(#wedgeGlow)',
-            transition: 'd 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)',
-          }}
+          style={{ filter: 'url(#wedgeGlow)' }}
         />
       )}
 
@@ -182,10 +207,7 @@ const SpeedArc: React.FC<Props> = ({ speed, maxSpeed, unit }) => {
             x1={edgeOuter.x} y1={edgeOuter.y}
             x2={edgeInner.x} y2={edgeInner.y}
             stroke="#77ddff" strokeWidth={2.5}
-            style={{
-              filter: 'url(#edgeGlow)',
-              transition: 'all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)',
-            }}
+            style={{ filter: 'url(#edgeGlow)' }}
           />
         );
       })()}
@@ -212,7 +234,7 @@ const SpeedArc: React.FC<Props> = ({ speed, maxSpeed, unit }) => {
       <text x={cx} y={cy + 22} textAnchor="middle" fill="#ffffff"
         fontSize="44" fontFamily="Orbitron" fontWeight="900"
         style={{ filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.2))' }}>
-        {Math.round(speed)}
+        {Math.round(displaySpeed)}
       </text>
     </svg>
   );

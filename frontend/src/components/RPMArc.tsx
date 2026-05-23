@@ -1,18 +1,46 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 interface Props {
   rpm: number;
   maxRpm: number;
 }
 
+const LERP = 0.14;
+
 const RPMArc: React.FC<Props> = ({ rpm, maxRpm }) => {
+  const [displayRpm, setDisplayRpm] = useState(rpm);
+  const animatedRef = useRef(rpm);
+  const rafRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    const target = rpm;
+    const tick = () => {
+      const current = animatedRef.current;
+      const diff = target - current;
+      if (Math.abs(diff) < 1) {
+        animatedRef.current = target;
+        setDisplayRpm(target);
+        return;
+      }
+      const next = current + diff * LERP;
+      animatedRef.current = next;
+      setDisplayRpm(next);
+      rafRef.current = requestAnimationFrame(tick);
+    };
+    if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(tick);
+    return () => {
+      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+    };
+  }, [rpm]);
+
   const cx = 150, cy = 150, r = 120;
   // Arc from 225° (bottom-left) to -45° (bottom-right) = 270° sweep
   const startAngle = 135; // degrees (7 o'clock position)
   const endAngle = 405;   // degrees (5 o'clock position)
   const sweep = endAngle - startAngle; // 270°
 
-  const rpmFraction = Math.min(rpm / maxRpm, 1);
+  const rpmFraction = Math.min(displayRpm / maxRpm, 1);
   const currentAngle = startAngle + rpmFraction * sweep;
 
   const toRad = (deg: number) => (deg * Math.PI) / 180;
@@ -99,10 +127,7 @@ const RPMArc: React.FC<Props> = ({ rpm, maxRpm }) => {
           stroke={normalColor}
           strokeWidth="22"
           strokeLinecap="round"
-          style={{
-            filter: 'drop-shadow(0 0 8px rgba(34, 136, 221, 0.6))',
-            transition: 'all 0.1s ease-out',
-          }}
+          style={{ filter: 'drop-shadow(0 0 8px rgba(34, 136, 221, 0.6))' }}
         />
       )}
 
@@ -114,10 +139,7 @@ const RPMArc: React.FC<Props> = ({ rpm, maxRpm }) => {
           stroke={redlineColor}
           strokeWidth="22"
           strokeLinecap="round"
-          style={{
-            filter: 'drop-shadow(0 0 10px rgba(255, 34, 34, 0.7))',
-            transition: 'all 0.1s ease-out',
-          }}
+          style={{ filter: 'drop-shadow(0 0 10px rgba(255, 34, 34, 0.7))' }}
         />
       )}
 
