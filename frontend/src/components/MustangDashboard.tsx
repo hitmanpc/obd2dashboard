@@ -2,7 +2,6 @@ import React from 'react';
 import { ObdData, SpeedUnit } from '../types';
 import RPMArc from './RPMArc';
 import SpeedArc from './SpeedArc';
-import CoolantBar from './CoolantBar';
 import BottomInfoBar from './BottomInfoBar';
 import './MustangDashboard.css';
 import GearIndicator from './GearIndicator';
@@ -29,23 +28,26 @@ const MustangDashboard: React.FC<Props> = ({ data, speedUnit }) => {
 
   return (
     <div className="mustang-dashboard">
-      {/* Left: RPM Arc */}
-      <div className="dash-left">
+      {/* Top: Wide RPM arc spanning left + center columns */}
+      <div className="dash-rpm">
         <RPMArc rpm={rpm} maxRpm={8000} />
-        <CoolantBar value={coolantTemp} min={100} max={260} />
       </div>
 
-      {/* Center: Gear + Mini Gauges */}
-      <div className="dash-center">
+      {/* Lower-left: Gear Indicator */}
+      <div className="dash-left">
         <GearIndicator gear={gear} driveMode={driveMode} rpm={rpm} />
+      </div>
+
+      {/* Lower-center: Mini Gauges */}
+      <div className="dash-center">
         <div className="mini-gauges-row">
-          <MiniGauge label="°F" icon="oil" value={oilTemp} min={100} max={300} />
-          <MiniGauge label="" icon="trans" value={transTemp} min={140} max={300} />
-          <MiniGauge label="°F" icon="engine" value={engineTemp} min={140} max={340} />
+          <MiniGauge name="TRANS TEMP" label="°F" icon="trans" value={oilTemp} min={100} max={300} />
+          <MiniGauge name="OIL PRESS" label="" icon="oil" value={transTemp} min={0} max={100} minLabel="L" maxLabel="H" />
+          <MiniGauge name="ENG TEMP" label="°F" icon="engine" value={engineTemp} min={140} max={340} />
         </div>
       </div>
 
-      {/* Right: Speed Arc */}
+      {/* Right: Speedometer spans both rows */}
       <div className="dash-right">
         <SpeedArc speed={speed} maxSpeed={160} unit={speedUnit} />
       </div>
@@ -57,6 +59,7 @@ const MustangDashboard: React.FC<Props> = ({ data, speedUnit }) => {
         rangeToEmpty={rangeToEmpty}
         fuelLevel={fuelLevel}
         speedUnit={speedUnit}
+        coolantTemp={coolantTemp}
       />
     </div>
   );

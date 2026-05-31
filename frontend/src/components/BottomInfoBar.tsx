@@ -7,13 +7,16 @@ interface Props {
   rangeToEmpty: number;
   fuelLevel: number;
   speedUnit: SpeedUnit;
+  coolantTemp: number;
 }
 
 const BottomInfoBar: React.FC<Props> = ({
-  odometer, gearSelector, rangeToEmpty, fuelLevel, speedUnit,
+  odometer, gearSelector, rangeToEmpty, fuelLevel, speedUnit, coolantTemp,
 }) => {
   const gears = ['P', 'R', 'N', 'D', 'S'];
   const distUnit = speedUnit === 'mph' ? 'mi' : 'km';
+  const coolantFraction = Math.min(Math.max((coolantTemp - 100) / (260 - 100), 0), 1);
+  const coolantColor = coolantFraction > 0.75 ? '#ff3333' : '#2288dd';
 
   return (
     <div style={{
@@ -23,9 +26,27 @@ const BottomInfoBar: React.FC<Props> = ({
       alignItems: 'center',
       fontFamily: 'Orbitron, sans-serif',
       fontSize: '12px',
-      padding: '0 20px',
+      padding: '0 16px',
       color: '#8899aa',
     }}>
+      {/* Coolant temperature bar */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+        <span style={{ color: '#4488cc', fontSize: '11px' }}>C</span>
+        <div style={{
+          width: '56px', height: '5px',
+          background: '#1a1a2e', borderRadius: '3px', overflow: 'hidden',
+        }}>
+          <div style={{
+            width: `${coolantFraction * 100}%`, height: '100%',
+            background: coolantColor,
+            borderRadius: '3px',
+            boxShadow: `0 0 6px ${coolantColor}88`,
+            transition: 'width 0.3s ease-out',
+          }} />
+        </div>
+        <span style={{ color: '#ff5544', fontSize: '11px' }}>H</span>
+      </div>
+
       {/* Odometer */}
       <span>{odometer.toFixed(1)} {distUnit}</span>
 

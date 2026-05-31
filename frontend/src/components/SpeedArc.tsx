@@ -214,6 +214,12 @@ const SpeedArc: React.FC<Props> = ({ speed, maxSpeed, unit }) => {
         style={{ filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.2))' }}>
         {Math.round(speed)}
       </text>
+
+      {/* Unit label below speed number */}
+      <text x={cx} y={cy + 48} textAnchor="middle" fill="#6688aa"
+        fontSize="11" fontFamily="Orbitron" fontWeight="600" letterSpacing="2">
+        {unit.toUpperCase()}
+      </text>
     </svg>
   );
 };
