@@ -1,4 +1,9 @@
 # 🚗 OBD2 Dashboard
+# ---------------------------------------------------------------------------#
+#
+#   [![CI](https://github.com/hitmanpc/obd2dashboard/actions/workflows/ci.yml/badge.svg)](https://github.com/hitmanpc/obd2dashboard/actions/workflows/ci.yml)
+#
+# ---------------------------------------------------------------------------
 
 ## 📋 Overview
 
