@@ -32,6 +32,14 @@ const GearIndicator: React.FC<Props> = ({ gear, driveMode }) => {
       }}>
         {driveMode}
       </div>
+      <div style={{
+        color: '#334455',
+        fontSize: '9px',
+        letterSpacing: '1px',
+        marginTop: '6px',
+      }}>
+        RPMx1000
+      </div>
     </div>
   );
 };

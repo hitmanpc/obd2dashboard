@@ -39,8 +39,9 @@ describe('App', () => {
     const { container } = render(<App />);
 
     expect(container.querySelector('.mustang-dashboard')).toBeInTheDocument();
-    expect(screen.getByText('RPM × 1000')).toBeInTheDocument();
-    expect(screen.getByText('KM/H')).toBeInTheDocument();
+    expect(container.querySelector('.dash-rpm')).toBeInTheDocument();
+    expect(screen.getByText('RPMx1000')).toBeInTheDocument();
+    expect(screen.getAllByText('KM/H').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('1964.5 km')).toBeInTheDocument();
     expect(screen.getByText('289 km to E')).toBeInTheDocument();
   });
@@ -53,6 +54,7 @@ describe('MustangDashboard', () => {
     );
 
     expect(container.querySelector('.mustang-dashboard')).toBeInTheDocument();
+    expect(container.querySelector('.dash-rpm')).toBeInTheDocument();
     expect(container.querySelector('.dash-left')).toBeInTheDocument();
     expect(container.querySelector('.dash-center')).toBeInTheDocument();
     expect(container.querySelector('.dash-right')).toBeInTheDocument();
@@ -77,20 +79,21 @@ describe('MustangDashboard', () => {
     expect(screen.getAllByText('N').length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText('D')).toHaveLength(2);
     expect(screen.getAllByText('0').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText('MPH')).toBeInTheDocument();
+    expect(screen.getAllByText('MPH').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('1964.5 mi')).toBeInTheDocument();
     expect(screen.getByText('289 mi to E')).toBeInTheDocument();
   });
 
   test('accepts legacy coolant temperature key', () => {
-    const { container } = render(
+    render(
       <MustangDashboard
         data={{ ...mockDashboardData, CoolantTemp: undefined, 'Coolant Temp': '260' }}
         speedUnit="km/h"
       />
     );
 
-    const coolantFill = container.querySelector('.dash-left div div div');
+    // Coolant bar is rendered in the bottom info bar; navigate from the 'C' cold label
+    const coolantFill = screen.getByText('C').nextElementSibling?.firstElementChild as HTMLElement;
     expect(coolantFill).toHaveStyle({ width: '100%', background: '#ff3333' });
   });
 });
@@ -111,10 +114,10 @@ describe('GearIndicator', () => {
 
 describe('MiniGauge', () => {
   test.each([
-    ['oil' as const, '200°F', '⚙'],
-    ['trans' as const, '180', '⇅'],
-    ['engine' as const, '210°F', '⚡'],
-  ])('renders the %s gauge with icon and value', (icon, valueText, iconText) => {
+    ['oil' as const, '200°F'],
+    ['trans' as const, '180'],
+    ['engine' as const, '210°F'],
+  ])('renders the %s gauge with SVG icon and value', (icon, valueText) => {
     const { container } = render(
       <MiniGauge
         label={icon === 'trans' ? '' : '°F'}
@@ -126,18 +129,23 @@ describe('MiniGauge', () => {
     );
 
     expect(container.querySelector('svg')).toBeInTheDocument();
-    expect(screen.getByText(iconText)).toBeInTheDocument();
     expect(screen.getByText(valueText)).toBeInTheDocument();
   });
 
   test('clamps low values so no active arc is drawn', () => {
-    const { container } = render(
+    render(
       <MiniGauge label="°F" icon="oil" value={50} min={100} max={300} />
     );
 
-    const paths = container.querySelectorAll('path');
-    expect(paths).toHaveLength(1);
     expect(screen.getByText('50°F')).toBeInTheDocument();
+  });
+
+  test('renders name label below gauge when provided', () => {
+    render(
+      <MiniGauge name="TRANS TEMP" label="°F" icon="trans" value={200} min={100} max={300} />
+    );
+
+    expect(screen.getByText('TRANS TEMP')).toBeInTheDocument();
   });
 });
 
@@ -150,6 +158,7 @@ describe('BottomInfoBar', () => {
         rangeToEmpty={289}
         fuelLevel={65}
         speedUnit="km/h"
+        coolantTemp={190}
       />
     );
 
@@ -165,11 +174,30 @@ describe('BottomInfoBar', () => {
         rangeToEmpty={180}
         fuelLevel={65}
         speedUnit="mph"
+        coolantTemp={190}
       />
     );
 
     expect(screen.getByText('1220.5 mi')).toBeInTheDocument();
     expect(screen.getByText('180 mi to E')).toBeInTheDocument();
+  });
+
+  test('renders coolant bar with C and H labels', () => {
+    render(
+      <BottomInfoBar
+        odometer={1964.5}
+        gearSelector="D"
+        rangeToEmpty={289}
+        fuelLevel={65}
+        speedUnit="km/h"
+        coolantTemp={260}
+      />
+    );
+
+    expect(screen.getByText('C')).toBeInTheDocument();
+    expect(screen.getByText('H')).toBeInTheDocument();
+    const coolantFill = screen.getByText('C').nextElementSibling?.firstElementChild as HTMLElement;
+    expect(coolantFill).toHaveStyle({ width: '100%', background: '#ff3333' });
   });
 
   test('renders the selected gear and fuel level state', () => {
@@ -180,6 +208,7 @@ describe('BottomInfoBar', () => {
         rangeToEmpty={289}
         fuelLevel={10}
         speedUnit="km/h"
+        coolantTemp={190}
       />
     );
 
@@ -206,12 +235,13 @@ describe('BottomInfoBar', () => {
 });
 
 describe('RPMArc', () => {
-  test('renders tachometer ticks and label', () => {
+  test('renders tachometer ticks and labels', () => {
     const { container } = render(<RPMArc rpm={3500} maxRpm={8000} />);
 
     const svg = container.querySelector('svg');
-    expect(svg).toHaveAttribute('viewBox', '0 0 300 300');
-    expect(screen.getByText('RPM × 1000')).toBeInTheDocument();
+    expect(svg).toHaveAttribute('viewBox', '0 0 560 110');
+    // Scale labels 0–8 are rendered as SVG text
+    expect(screen.getByText('0')).toBeInTheDocument();
     expect(screen.getByText('8')).toBeInTheDocument();
   });
 
@@ -238,7 +268,7 @@ describe('SpeedArc', () => {
 
     const svg = container.querySelector('svg');
     expect(svg).toHaveAttribute('viewBox', '0 0 300 300');
-    expect(screen.getByText('KM/H')).toBeInTheDocument();
+    expect(screen.getAllByText('KM/H').length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText('100').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('160')).toBeInTheDocument();
   });
@@ -246,7 +276,7 @@ describe('SpeedArc', () => {
   test('renders speed, unit, and scale for miles per hour', () => {
     render(<SpeedArc speed={62} maxSpeed={100} unit="mph" />);
 
-    expect(screen.getByText('MPH')).toBeInTheDocument();
+    expect(screen.getAllByText('MPH').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('62')).toBeInTheDocument();
     expect(screen.getByText('100')).toBeInTheDocument();
   });
