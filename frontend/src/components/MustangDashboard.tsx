@@ -28,6 +28,12 @@ const MustangDashboard: React.FC<Props> = ({ data, speedUnit }) => {
 
   return (
     <div className="mustang-dashboard">
+      <div className="cluster-glass" aria-hidden="true" />
+      <div className="status-row" aria-label="Vehicle status">
+        <span className="turn-signal turn-signal--left" aria-label="Left turn signal">&#9664;</span>
+        <span className="status-row__title">MUSTANG</span>
+        <span className="turn-signal turn-signal--right" aria-label="Right turn signal">&#9654;</span>
+      </div>
       {/* Top: Wide RPM arc spanning left + center columns */}
       <div className="dash-rpm">
         <RPMArc rpm={rpm} maxRpm={8000} />
@@ -41,8 +47,8 @@ const MustangDashboard: React.FC<Props> = ({ data, speedUnit }) => {
       {/* Lower-center: Mini Gauges */}
       <div className="dash-center">
         <div className="mini-gauges-row">
-          <MiniGauge name="TRANS TEMP" label="°F" icon="trans" value={oilTemp} min={100} max={300} />
-          <MiniGauge name="OIL PRESS" label="" icon="oil" value={transTemp} min={0} max={100} minLabel="L" maxLabel="H" />
+          <MiniGauge name="TRANS TEMP" label="°F" icon="trans" value={transTemp} min={100} max={300} />
+          <MiniGauge name="OIL TEMP" label="°F" icon="oil" value={oilTemp} min={100} max={300} minLabel="L" maxLabel="H" />
           <MiniGauge name="ENG TEMP" label="°F" icon="engine" value={engineTemp} min={140} max={340} />
         </div>
       </div>

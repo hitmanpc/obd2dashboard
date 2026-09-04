@@ -1,102 +1,13 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
-
-body {
-  background-color: #1a1a1a;
-  color: #ffffff;
-  font-family: 'Orbitron', sans-serif;
-  margin: 0;
-  padding: 0;
+.dashboard-stage {
+  width: 100vw;
+  min-height: 100dvh;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  box-sizing: border-box;
+  padding: clamp(8px, 2vw, 32px);
+  background:
+    radial-gradient(ellipse at 50% 55%, rgba(20, 49, 76, 0.24), transparent 52%),
+    linear-gradient(180deg, #080b0f 0%, #000 70%);
   overflow: hidden;
-}
-
-.car-dashboard {
-  width: 100%;
-  max-width: 1000px;
-  background-color: #121212;
-  border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-  padding: 20px;
-}
-
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto 100px;
-  gap: 20px;
-}
-
-.rpm-section {
-  grid-column: 1;
-  grid-row: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.rpm-gauge {
-  width: 300px;
-  height: 300px;
-}
-
-.rpm-text {
-  font-size: 24px;
-  fill: white;
-}
-
-.gear-text {
-  font-size: 24px;
-  fill: #888;
-}
-
-.info-section {
-  grid-column: 2;
-  grid-row: 1;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-.info-item {
-  background-color: #1e1e1e;
-  border-radius: 10px;
-  padding: 15px;
-  text-align: center;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-}
-
-.info-label {
-  color: #888;
-  font-size: 12px;
-  text-transform: uppercase;
-  margin-bottom: 5px;
-}
-
-.info-value {
-  font-size: 24px;
-  color: #ffffff;
-}
-
-.controls-section {
-  grid-column: 1 / -1;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: #1e1e1e;
-  border-radius: 10px;
-  padding: 15px;
-}
-
-.speed-toggle, .system-status {
-  font-size: 16px;
-  color: #888;
-  cursor: pointer;
-  transition: color 0.3s ease;
-}
-
-.speed-toggle:hover {
-  color: #ffffff;
 }
