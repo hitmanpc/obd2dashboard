@@ -8,15 +8,9 @@ function App(): JSX.Element {
   const { data, speedUnit } = useWebSocket();
 
   return (
-    <div style={{
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      height: '100vh',
-      background: '#000',
-    }}>
+    <main className="dashboard-stage">
       <MustangDashboard data={data} speedUnit={speedUnit} />
-    </div>
+    </main>
   );
 }
 

@@ -69,8 +69,11 @@ describe('MustangDashboard', () => {
     expect(screen.getAllByText('D')).toHaveLength(2);
     expect(screen.getAllByText('100').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('200°F')).toBeInTheDocument();
-    expect(screen.getByText('180')).toBeInTheDocument();
+    expect(screen.getByText('180°F')).toBeInTheDocument();
     expect(screen.getByText('210°F')).toBeInTheDocument();
+    expect(screen.getByText('TRANS TEMP')).toBeInTheDocument();
+    expect(screen.getByText('OIL TEMP')).toBeInTheDocument();
+    expect(screen.getByLabelText('Vehicle status')).toBeInTheDocument();
   });
 
   test('uses fallback values when OBD data is missing', () => {
