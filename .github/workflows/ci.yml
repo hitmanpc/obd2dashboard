@@ -22,15 +22,15 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Restore
-        run: dotnet restore
+        run: dotnet restore ObdDashboard.csproj
 
       - name: Build
-        run: dotnet build --no-restore --configuration Release
+        run: dotnet build ObdDashboard.csproj --no-restore --configuration Release
 
       - name: Test
         # Runs any xUnit/NUnit/MSTest projects in the solution.
         # Until you add one (see notes), this reports "no tests" and stays green.
-        run: dotnet test --configuration Release --verbosity normal
+        run: dotnet test ObdDashboard.csproj --configuration Release --verbosity normal
 
   frontend:
     name: Frontend (React + TypeScript)
