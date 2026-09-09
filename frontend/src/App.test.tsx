@@ -242,7 +242,8 @@ describe('RPMArc', () => {
     const { container } = render(<RPMArc rpm={3500} maxRpm={8000} />);
 
     const svg = container.querySelector('svg');
-    expect(svg).toHaveAttribute('viewBox', '0 0 560 110');
+    expect(svg).toHaveAttribute('viewBox', '0 0 300 300');
+    expect(svg).toHaveAccessibleName('Tachometer 3500 RPM');
     // Scale labels 0–8 are rendered as SVG text
     expect(screen.getByText('0')).toBeInTheDocument();
     expect(screen.getByText('8')).toBeInTheDocument();

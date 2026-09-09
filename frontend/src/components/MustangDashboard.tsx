@@ -29,23 +29,29 @@ const MustangDashboard: React.FC<Props> = ({ data, speedUnit }) => {
   return (
     <div className="mustang-dashboard">
       <div className="cluster-glass" aria-hidden="true" />
-      <div className="status-row" aria-label="Vehicle status">
+      <header className="status-row" aria-label="Vehicle status">
         <span className="turn-signal turn-signal--left" aria-label="Left turn signal">&#9664;</span>
-        <span className="status-row__title">MUSTANG</span>
+        <div className="status-row__identity">
+          <span className="status-row__title">MUSTANG</span>
+          <span className="status-row__mode">TRACK MODE</span>
+        </div>
         <span className="turn-signal turn-signal--right" aria-label="Right turn signal">&#9654;</span>
-      </div>
-      {/* Top: Wide RPM arc spanning left + center columns */}
+      </header>
+
       <div className="dash-rpm">
         <RPMArc rpm={rpm} maxRpm={8000} />
       </div>
 
-      {/* Lower-left: Gear Indicator */}
       <div className="dash-left">
         <GearIndicator gear={gear} driveMode={driveMode} rpm={rpm} />
       </div>
 
-      {/* Lower-center: Mini Gauges */}
       <div className="dash-center">
+        <div className="performance-heading">
+          <span>PERFORMANCE</span>
+          <strong>{Math.round(rpm).toLocaleString()}</strong>
+          <small>ENGINE RPM</small>
+        </div>
         <div className="mini-gauges-row">
           <MiniGauge name="TRANS TEMP" label="°F" icon="trans" value={transTemp} min={100} max={300} />
           <MiniGauge name="OIL TEMP" label="°F" icon="oil" value={oilTemp} min={100} max={300} minLabel="L" maxLabel="H" />
@@ -53,12 +59,10 @@ const MustangDashboard: React.FC<Props> = ({ data, speedUnit }) => {
         </div>
       </div>
 
-      {/* Right: Speedometer spans both rows */}
       <div className="dash-right">
         <SpeedArc speed={speed} maxSpeed={160} unit={speedUnit} />
       </div>
 
-      {/* Bottom Bar */}
       <BottomInfoBar
         odometer={odometer}
         gearSelector={gearSelector}
