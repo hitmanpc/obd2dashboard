@@ -1,6 +1,6 @@
 /* eslint-disable testing-library/no-container */
 /* eslint-disable testing-library/no-node-access */
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import App from './App';
 import BottomInfoBar from './components/BottomInfoBar';
 import CoolantBar from './components/CoolantBar';
@@ -17,6 +17,7 @@ const mockDashboardData: ObdData = {
   Gear: '4',
   DriveMode: 'D',
   OilTemp: '200',
+  OilPressure: '58',
   TransTemp: '180',
   EngineTemp: '210',
   CoolantTemp: '195',
@@ -35,69 +36,98 @@ jest.mock('./hooks/useWebSocket', () => ({
 }));
 
 describe('App', () => {
-  test('renders the dashboard with websocket data', () => {
-    const { container } = render(<App />);
+  test('renders live WebSocket telemetry in the supplied instrument cluster', () => {
+    render(<App />);
 
-    expect(container.querySelector('.mustang-dashboard')).toBeInTheDocument();
-    expect(container.querySelector('.dash-rpm')).toBeInTheDocument();
-    expect(screen.getByText('RPMx1000')).toBeInTheDocument();
-    expect(screen.getAllByText('KM/H').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText('1964.5 km')).toBeInTheDocument();
-    expect(screen.getByText('289 km to E')).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Mustang digital dashboard' }))
+      .toHaveAccessibleDescription(/100 kilometers per hour, 3500 RPM, gear 4/);
+    expect(screen.getByLabelText('Speed 100 kilometers per hour')).toBeInTheDocument();
+    expect(screen.getByText('001964.5')).toBeInTheDocument();
+    expect(screen.getByText('289')).toBeInTheDocument();
+    expect(screen.getByText('km to E')).toBeInTheDocument();
   });
 });
 
 describe('MustangDashboard', () => {
-  test('renders the primary dashboard regions', () => {
+  test('renders the original HTML composition as one scalable instrument cluster', () => {
     const { container } = render(
       <MustangDashboard data={mockDashboardData} speedUnit="km/h" />
     );
 
-    expect(container.querySelector('.mustang-dashboard')).toBeInTheDocument();
-    expect(container.querySelector('.dash-rpm')).toBeInTheDocument();
-    expect(container.querySelector('.dash-left')).toBeInTheDocument();
-    expect(container.querySelector('.dash-center')).toBeInTheDocument();
-    expect(container.querySelector('.dash-right')).toBeInTheDocument();
-    expect(container.querySelector('.mini-gauges-row')).toBeInTheDocument();
-  });
-
-  test('renders parsed OBD values throughout the dashboard', () => {
-    render(<MustangDashboard data={mockDashboardData} speedUnit="km/h" />);
-
+    expect(screen.getByRole('img', { name: 'Mustang digital dashboard' }))
+      .toHaveAttribute('viewBox', '0 0 1920 720');
+    expect(container.querySelectorAll('svg')).toHaveLength(1);
+    expect(screen.getByText('RPM x 1000')).toBeInTheDocument();
     expect(screen.getByText('GEAR')).toBeInTheDocument();
-    expect(screen.getAllByText('4').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText('D')).toHaveLength(2);
-    expect(screen.getAllByText('100').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText('200°F')).toBeInTheDocument();
-    expect(screen.getByText('180°F')).toBeInTheDocument();
-    expect(screen.getByText('210°F')).toBeInTheDocument();
     expect(screen.getByText('TRANS TEMP')).toBeInTheDocument();
-    expect(screen.getByText('OIL TEMP')).toBeInTheDocument();
-    expect(screen.getByLabelText('Vehicle status')).toBeInTheDocument();
+    expect(screen.getByText('OIL PRESS')).toBeInTheDocument();
+    expect(screen.getByText('ENG TEMP')).toBeInTheDocument();
   });
 
-  test('uses fallback values when OBD data is missing', () => {
-    render(<MustangDashboard data={{}} speedUnit="mph" />);
-
-    expect(screen.getAllByText('N').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText('D')).toHaveLength(2);
-    expect(screen.getAllByText('0').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText('MPH').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText('1964.5 mi')).toBeInTheDocument();
-    expect(screen.getByText('289 mi to E')).toBeInTheDocument();
-  });
-
-  test('accepts legacy coolant temperature key', () => {
-    render(
-      <MustangDashboard
-        data={{ ...mockDashboardData, CoolantTemp: undefined, 'Coolant Temp': '260' }}
-        speedUnit="km/h"
-      />
+  test('updates instruments, distances, units and transmission selection with new telemetry', () => {
+    const { rerender } = render(
+      <MustangDashboard data={mockDashboardData} speedUnit="km/h" />
     );
 
-    // Coolant bar is rendered in the bottom info bar; navigate from the 'C' cold label
-    const coolantFill = screen.getByText('C').nextElementSibling?.firstElementChild as HTMLElement;
-    expect(coolantFill).toHaveStyle({ width: '100%', background: '#ff3333' });
+    expect(screen.getByLabelText('Tachometer 3500 RPM')).toBeInTheDocument();
+    expect(screen.getByLabelText('Transmission temperature 180 degrees Fahrenheit')).toBeInTheDocument();
+    expect(screen.getByLabelText('Oil pressure 58 PSI')).toBeInTheDocument();
+    expect(screen.getByLabelText('Engine temperature 210 degrees Fahrenheit')).toBeInTheDocument();
+    expect(screen.getByLabelText('Fuel level 65 percent')).toBeInTheDocument();
+
+    rerender(<MustangDashboard data={{
+      ...mockDashboardData, RPM: '4500', Speed: '55', Gear: '5', GearSelector: 'S',
+      TransTemp: '178', OilPressure: '40', EngineTemp: '220', FuelLevel: '72',
+      Odometer: '12345.6', RangeToEmpty: '180',
+    }} speedUnit="mph" />);
+
+    expect(screen.getByLabelText('Tachometer 4500 RPM')).toBeInTheDocument();
+    expect(screen.getByLabelText('Speed 55 miles per hour')).toBeInTheDocument();
+    expect(screen.getByLabelText('Selected gear 5')).toHaveTextContent('5');
+    expect(screen.getByLabelText('Oil pressure 40 PSI')).toBeInTheDocument();
+    expect(screen.getByLabelText('Transmission temperature 178 degrees Fahrenheit')).toBeInTheDocument();
+    expect(screen.getByLabelText('Engine temperature 220 degrees Fahrenheit')).toBeInTheDocument();
+    expect(screen.getByLabelText('Fuel level 72 percent')).toBeInTheDocument();
+    expect(screen.getByText('012345.6')).toBeInTheDocument();
+    expect(screen.getByText('180')).toBeInTheDocument();
+    expect(screen.getByText('mi to E')).toBeInTheDocument();
+    const selector = screen.getByLabelText('Transmission in S');
+    expect(within(selector).getByText('S')).toHaveClass('drive-text');
+    expect(within(selector).getByText('D')).toHaveClass('muted-text');
+  });
+
+  test('uses existing fallbacks and leaves unavailable oil pressure unfilled', () => {
+    render(<MustangDashboard data={{ OilTemp: '200' }} speedUnit="mph" />);
+
+    expect(screen.getByLabelText('Selected gear N')).toBeInTheDocument();
+    expect(screen.getByLabelText('Speed 0 miles per hour')).toBeInTheDocument();
+    expect(screen.getByLabelText('Tachometer 0 RPM')).toBeInTheDocument();
+    expect(screen.getByLabelText('Oil pressure unavailable')).toBeInTheDocument();
+    expect(screen.getByText('001964.5')).toBeInTheDocument();
+    expect(screen.getByText('mi to E')).toBeInTheDocument();
+  });
+
+  test('accepts the legacy coolant temperature key and clamps gauge fills', () => {
+    const { container, rerender } = render(
+      <MustangDashboard data={{
+        ...mockDashboardData, CoolantTemp: undefined, 'Coolant Temp': '260',
+        RPM: '12000', FuelLevel: '150',
+      }} speedUnit="km/h" />
+    );
+
+    expect(screen.getByLabelText('Coolant temperature 260 degrees Fahrenheit')).toBeInTheDocument();
+    expect(container.querySelector('[id$="-coolantArc"]')).toHaveAttribute('stroke-dasharray', '100 100');
+    expect(container.querySelector('[id$="-fuelArc"]')).toHaveAttribute('stroke-dasharray', '100 100');
+    expect(container.querySelector('[id$="-tachFill"]')).toHaveAttribute('stroke-dasharray', '1000.00 1000');
+
+    rerender(<MustangDashboard data={{
+      RPM: '-100', Speed: 'invalid', FuelLevel: '-20', CoolantTemp: 'Infinity',
+    }} speedUnit="km/h" />);
+
+    expect(container.querySelector('[id$="-fuelArc"]')).toHaveAttribute('stroke-dasharray', '0 100');
+    expect(container.querySelector('[id$="-tachFill"]')).toHaveAttribute('stroke-dasharray', '0.00 1000');
+    expect(screen.getByLabelText('Speed 0 kilometers per hour')).toBeInTheDocument();
+    expect(container.innerHTML).not.toMatch(/NaN|Infinity/);
   });
 });
 

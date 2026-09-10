@@ -1,130 +1,99 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=swap');
-
 .mustang-dashboard {
-  width: min(100%, 1680px);
-  aspect-ratio: 2.25 / 1;
-  max-height: calc(100dvh - 32px);
-  margin: 0 auto;
-  background:
-    radial-gradient(circle at 19% 52%, rgba(18, 88, 138, .17), transparent 24%),
-    radial-gradient(circle at 82% 52%, rgba(18, 88, 138, .15), transparent 24%),
-    linear-gradient(180deg, #080c10 0%, #020406 56%, #05090d 100%);
-  border-radius: clamp(20px, 3vw, 54px);
-  display: grid;
-  grid-template-columns: 35fr 30fr 35fr;
-  grid-template-rows: 14% 1fr 14%;
-  padding: clamp(12px, 1.8vw, 28px) clamp(14px, 2.3vw, 38px);
-  box-sizing: border-box;
-  font-family: 'Orbitron', sans-serif;
+  --ice: #e8edf2;
+  --red: #ec1a11;
+  color-scheme: dark;
+  font-family: "Bahnschrift", "DIN Alternate", "Arial Narrow", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
   position: relative;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
   overflow: hidden;
-  border: 1px solid #1d303d;
-  box-shadow:
-    inset 0 0 80px rgba(0, 100, 255, 0.05),
-    0 0 40px rgba(0, 0, 0, 0.8);
+  background:
+    radial-gradient(ellipse at 50% 48%, #111820 0%, #070a0d 47%, #000 88%);
+  isolation: isolate;
 }
 
-.cluster-glass {
+.mustang-dashboard::after {
   position: absolute;
   inset: 0;
+  z-index: 5;
   pointer-events: none;
+  content: "";
   background:
-    linear-gradient(112deg, transparent 12%, rgba(125, 190, 240, 0.04) 39%, transparent 58%),
-    repeating-linear-gradient(90deg, transparent 0 4px, rgba(255,255,255,.007) 4px 5px);
-  box-shadow: inset 0 0 4px rgba(180, 220, 255, 0.25);
-  z-index: 4;
+    linear-gradient(112deg, transparent 17%, rgba(255,255,255,.035) 27%, transparent 38%),
+    radial-gradient(ellipse at 50% 50%, transparent 54%, rgba(0,0,0,.72) 100%);
+  mix-blend-mode: screen;
 }
 
-.status-row {
-  grid-column: 1 / -1;
-  grid-row: 1;
-  display: flex;
-  justify-content: center;
-  gap: clamp(80px, 16vw, 250px);
-  align-items: center;
-  color: #678397;
-  font-size: clamp(8px, .72vw, 12px);
-  letter-spacing: .28em;
+.mustang-dashboard svg {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
-.turn-signal { color: #1b5938; font-size: 1.7em; text-shadow: 0 0 12px #18a35c55; }
-.status-row__identity { display: flex; flex-direction: column; align-items: center; gap: 5px; }
-.status-row__title { color: #d4e5ef; font-size: 1.15em; font-weight: 700; }
-.status-row__mode { color: #168fd2; font-size: .65em; letter-spacing: .36em; }
-
-.dash-rpm {
-  grid-column: 1;
-  grid-row: 2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.mustang-dashboard text {
+  fill: var(--ice);
+  font-family: inherit;
+  font-variant-numeric: tabular-nums lining-nums;
 }
 
-/* Gear indicator: lower-left */
-.dash-left {
-  grid-column: 2;
-  grid-row: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  padding-top: 8%;
+.mustang-dashboard .label {
+  fill: #c6cbd0;
+  font-size: 20px;
+  font-weight: 400;
+  letter-spacing: 1px;
 }
 
-/* Mini gauges: lower-center */
-.dash-center {
-  grid-column: 2;
-  grid-row: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
-  padding-bottom: 4%;
+.mustang-dashboard .small {
+  fill: #aeb4ba;
+  font-size: 17px;
+  letter-spacing: .5px;
 }
 
-/* Speedometer spans both top and middle rows on the right */
-.dash-right {
-  grid-column: 3;
-  grid-row: 2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.mustang-dashboard .tick {
+  stroke: #bbc2c8;
+  stroke-linecap: square;
 }
 
-.mini-gauges-row {
-  display: flex;
-  gap: 16px;
-  margin-top: 4px;
+.mustang-dashboard .tick.minor { opacity: .66; }
+.mustang-dashboard .tick.red { stroke: var(--red); }
+
+.mustang-dashboard .value-shadow {
+  filter: var(--cluster-text-shadow);
 }
 
-.performance-heading { display: none; }
-
-.dash-rpm svg, .dash-right svg { width: min(100%, 390px); height: auto; }
-
-@media (max-width: 760px), (max-height: 420px) {
-  .mustang-dashboard {
-    min-height: 300px;
-    aspect-ratio: 2 / 1;
-    grid-template-columns: 34fr 32fr 34fr;
-  }
-
-  .mini-gauges-row { gap: 2px; }
-  .dash-left { transform: scale(.72); }
-  .dash-center { transform: scale(.72); }
-  .dash-right svg { width: 100%; height: auto; }
+.mustang-dashboard .metal-value {
+  fill: var(--cluster-silver-text);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .mustang-dashboard { animation: cluster-startup .65s ease-out both; }
-  .dash-rpm, .dash-left, .dash-center, .dash-right { animation: instruments-on .8s .18s ease-out both; }
+.mustang-dashboard .muted-text {
+  fill: #aeb4ba;
 }
 
-@keyframes cluster-startup {
-  from { opacity: 0; filter: brightness(.2); transform: scale(.985); }
-  to { opacity: 1; filter: brightness(1); transform: scale(1); }
+.mustang-dashboard .drive-text {
+  fill: #ec1a11;
 }
 
-@keyframes instruments-on {
-  from { opacity: 0; filter: blur(3px); }
-  to { opacity: 1; filter: blur(0); }
+.mustang-dashboard .blue-glow {
+  filter: var(--cluster-blue-glow);
+}
+
+.mustang-dashboard .boot {
+  animation: clusterBoot 1s cubic-bezier(.2,.75,.25,1) both;
+}
+
+.mustang-dashboard .boot-delay {
+  animation: clusterBoot 1.2s .18s cubic-bezier(.2,.75,.25,1) both;
+}
+
+@keyframes clusterBoot {
+  from { opacity: 0; transform: scale(.992); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mustang-dashboard .boot,
+  .mustang-dashboard .boot-delay { animation: none; }
 }

@@ -1,0 +1,616 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#030506">
+  <title>Mustang Digital Dashboard</title>
+  <meta name="description" content="A responsive Mustang-inspired digital instrument cluster.">
+  <style>
+    :root {
+      color-scheme: dark;
+      --ice: #e8edf2;
+      --muted: #a9afb5;
+      --blue: #008cff;
+      --blue-hot: #25c1ff;
+      --red: #ec1a11;
+    }
+
+    * { box-sizing: border-box; }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #000;
+    }
+
+    body {
+      display: grid;
+      place-items: center;
+      font-family: "Bahnschrift", "DIN Alternate", "Arial Narrow", Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+    }
+
+    .cluster {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background:
+        radial-gradient(ellipse at 50% 48%, #111820 0%, #070a0d 47%, #000 88%);
+      isolation: isolate;
+    }
+
+    .cluster::after {
+      position: absolute;
+      inset: 0;
+      z-index: 5;
+      pointer-events: none;
+      content: "";
+      background:
+        linear-gradient(112deg, transparent 17%, rgba(255,255,255,.035) 27%, transparent 38%),
+        radial-gradient(ellipse at 50% 50%, transparent 54%, rgba(0,0,0,.72) 100%);
+      mix-blend-mode: screen;
+    }
+
+    svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    text {
+      fill: var(--ice);
+      font-family: inherit;
+      font-variant-numeric: tabular-nums lining-nums;
+    }
+
+    .label {
+      fill: #c6cbd0;
+      font-size: 20px;
+      font-weight: 400;
+      letter-spacing: 1px;
+    }
+
+    .small {
+      fill: #aeb4ba;
+      font-size: 17px;
+      letter-spacing: .5px;
+    }
+
+    .tick {
+      stroke: #bbc2c8;
+      stroke-linecap: square;
+    }
+
+    .tick.minor { opacity: .66; }
+    .tick.red { stroke: var(--red); }
+
+    .value-shadow {
+      filter: url(#textShadow);
+    }
+
+    .metal-value {
+      fill: url(#silverText);
+    }
+
+    .muted-text {
+      fill: #aeb4ba;
+    }
+
+    .drive-text {
+      fill: #ec1a11;
+    }
+
+    .blue-glow {
+      filter: url(#blueGlow);
+    }
+
+    .boot {
+      animation: clusterBoot 1s cubic-bezier(.2,.75,.25,1) both;
+    }
+
+    .boot-delay {
+      animation: clusterBoot 1.2s .18s cubic-bezier(.2,.75,.25,1) both;
+    }
+
+    @keyframes clusterBoot {
+      from { opacity: 0; transform: scale(.992); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .boot,
+      .boot-delay { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="cluster" aria-label="Mustang digital instrument cluster">
+    <svg id="dashboard" viewBox="0 0 1920 720" preserveAspectRatio="xMidYMid meet"
+         role="img" aria-labelledby="dashTitle dashDesc">
+      <title id="dashTitle">Mustang digital dashboard</title>
+      <desc id="dashDesc">A black and blue instrument cluster showing fourth gear, 55 miles per hour, 4,500 RPM, transmission temperature, oil pressure, engine temperature, odometer, range, coolant and fuel.</desc>
+
+      <defs>
+        <linearGradient id="outerBezel" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#08090b"/>
+          <stop offset=".24" stop-color="#55575a"/>
+          <stop offset=".31" stop-color="#141517"/>
+          <stop offset=".70" stop-color="#030405"/>
+          <stop offset=".82" stop-color="#8c8f92"/>
+          <stop offset=".90" stop-color="#222427"/>
+          <stop offset="1" stop-color="#010203"/>
+        </linearGradient>
+        <linearGradient id="innerBezel" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#b4b6b8"/>
+          <stop offset=".08" stop-color="#292b2e"/>
+          <stop offset=".45" stop-color="#060708"/>
+          <stop offset=".80" stop-color="#5e6164"/>
+          <stop offset="1" stop-color="#17191b"/>
+        </linearGradient>
+        <radialGradient id="glass" cx=".5" cy=".42" r=".68">
+          <stop offset="0" stop-color="#0a1016"/>
+          <stop offset=".55" stop-color="#030608"/>
+          <stop offset="1" stop-color="#000"/>
+        </radialGradient>
+        <linearGradient id="blueBand" x1="0" y1="1" x2="1" y2="0">
+          <stop offset="0" stop-color="#00142d"/>
+          <stop offset=".38" stop-color="#003f92"/>
+          <stop offset=".72" stop-color="#008dff"/>
+          <stop offset=".90" stop-color="#0fb8ff"/>
+          <stop offset="1" stop-color="#e8fbff"/>
+        </linearGradient>
+        <linearGradient id="silverText" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#fff"/>
+          <stop offset=".42" stop-color="#eef2f5"/>
+          <stop offset=".55" stop-color="#aeb4ba"/>
+          <stop offset="1" stop-color="#f8fafb"/>
+        </linearGradient>
+        <filter id="blueGlow" x="-60%" y="-60%" width="220%" height="220%">
+          <feGaussianBlur stdDeviation="5" result="blur"/>
+          <feMerge>
+            <feMergeNode in="blur"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+        <filter id="textShadow" x="-50%" y="-50%" width="200%" height="200%">
+          <feDropShadow dx="2" dy="4" stdDeviation="3" flood-color="#000" flood-opacity=".9"/>
+        </filter>
+        <filter id="bezelShadow" x="-20%" y="-30%" width="140%" height="170%">
+          <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#000" flood-opacity=".95"/>
+        </filter>
+        <filter id="softGlow" x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur stdDeviation="13"/>
+        </filter>
+        <pattern id="microTexture" width="5" height="5" patternUnits="userSpaceOnUse">
+          <circle cx="1" cy="1" r=".45" fill="#fff" opacity=".08"/>
+          <circle cx="4" cy="3" r=".35" fill="#fff" opacity=".04"/>
+        </pattern>
+        <clipPath id="clusterClip">
+          <path d="M355 73 C425 72 448 111 523 111 H1371 C1447 111 1488 72 1560 73
+                   C1761 77 1884 188 1888 353 C1893 535 1788 659 1614 679
+                   C1504 691 1465 624 1385 618 H540 C461 623 421 691 309 679
+                   C132 661 27 536 32 353 C36 184 158 75 355 73 Z"/>
+        </clipPath>
+      </defs>
+
+      <g filter="url(#bezelShadow)">
+        <path d="M352 42 C430 39 461 85 528 87 H1362 C1430 85 1479 39 1560 42
+                 C1789 45 1926 173 1928 353 C1930 563 1809 701 1618 716
+                 C1494 726 1446 653 1376 648 H548 C478 653 432 726 302 715
+                 C111 699 -11 561 -8 350 C-5 168 133 45 352 42 Z"
+              fill="#070809" stroke="url(#outerBezel)" stroke-width="35"/>
+        <path d="M355 73 C425 72 448 111 523 111 H1371 C1447 111 1488 72 1560 73
+                 C1761 77 1884 188 1888 353 C1893 535 1788 659 1614 679
+                 C1504 691 1465 624 1385 618 H540 C461 623 421 691 309 679
+                 C132 661 27 536 32 353 C36 184 158 75 355 73 Z"
+              fill="url(#glass)" stroke="url(#innerBezel)" stroke-width="4"/>
+      </g>
+
+      <g clip-path="url(#clusterClip)">
+        <ellipse cx="955" cy="330" rx="800" ry="290" fill="#07131d" opacity=".18"/>
+        <ellipse cx="950" cy="680" rx="590" ry="110" fill="#0078ff" opacity=".045" filter="url(#softGlow)"/>
+        <rect x="25" y="69" width="1870" height="620" fill="url(#microTexture)" opacity=".17"/>
+        <path d="M105 161 C462 78 1288 100 1794 177" fill="none" stroke="#fff" stroke-opacity=".035" stroke-width="20"/>
+      </g>
+
+      <path d="M404 163 H1353 C1391 163 1424 178 1448 203
+               C1320 229 1238 343 1238 469 C1238 520 1252 568 1279 607
+               H283 C247 574 226 526 218 477 C194 329 249 205 365 171
+               C378 166 391 163 404 163 Z"
+            fill="#020405" stroke="#50606a" stroke-width="1.4"/>
+
+      <g id="tachometer" class="boot">
+        <path id="tachBase" d="M238 485 C188 371 207 249 304 194 C346 170 397 166 466 170 L1355 170"
+              fill="none" stroke="#27333b" stroke-width="31" opacity=".75"/>
+        <path id="tachFill" d="M238 485 C188 371 207 249 304 194 C346 170 397 166 466 170 L1355 170"
+              pathLength="1000" fill="none" stroke="url(#blueBand)" stroke-width="30"
+              stroke-dasharray="0 1000" class="blue-glow" opacity=".93"/>
+        <path id="tachRim" d="M238 485 C188 371 207 249 304 194 C346 170 397 166 466 170 L1355 170"
+              fill="none" stroke="#8fa2b0" stroke-width="1.4"/>
+        <g id="tachTicks"></g>
+        <line id="tachMarker" x1="650" y1="164" x2="650" y2="207"
+              stroke="#ecfaff" stroke-width="4" filter="url(#blueGlow)"/>
+        <text x="1160" y="268" class="small">RPM x 1000</text>
+      </g>
+
+      <g class="boot-delay">
+        <path d="M403 276 H1273" stroke="#8d9aa3" stroke-opacity=".8" stroke-width="1"/>
+        <path d="M283 578 H1274" stroke="#49545b" stroke-width="1"/>
+        <path d="M587 300 V548" stroke="#1d2429" stroke-width="1"/>
+
+        <g aria-label="Selected gear">
+          <text x="419" y="337" text-anchor="middle" class="label">GEAR</text>
+          <text id="gearValue" x="420" y="458" text-anchor="middle" font-size="126"
+                font-weight="300" class="metal-value value-shadow">4</text>
+          <g transform="translate(388 481) skewX(-18)">
+            <path d="M0 0 H68 L58 10 H16 L13 16 H55 L46 27 H-6 L3 16 H5 L14 6 H-6 Z"
+                  fill="#b7bdc1"/>
+            <text x="70" y="24" fill="#b7bdc1" font-size="31" font-weight="700">+</text>
+          </g>
+        </g>
+
+        <g id="transGauge" aria-label="Transmission temperature 178 degrees Fahrenheit">
+          <circle cx="705" cy="397" r="75" fill="#030506" stroke="#77818a" stroke-width="1.5"/>
+          <path id="transTrack" fill="none" stroke="#1c2730" stroke-width="18"/>
+          <path id="transFill" fill="none" stroke="url(#blueBand)" stroke-width="18"/>
+          <path id="transHot" fill="none" stroke="#ed1b14" stroke-width="4"/>
+          <g id="transTicks"></g>
+          <circle cx="705" cy="397" r="27" fill="none" stroke="#d8dde0" stroke-width="6"/>
+          <circle cx="705" cy="397" r="11" fill="none" stroke="#d8dde0" stroke-width="4"/>
+          <g stroke="#d8dde0" stroke-width="5">
+            <path d="M705 362 V373 M705 421 V432 M670 397 H681 M729 397 H740"/>
+            <path d="M680 373 L688 381 M722 413 L730 421 M680 421 L688 413 M722 381 L730 373"/>
+          </g>
+          <path d="M709 379 V404 A8 8 0 1 1 701 404 V379 A4 4 0 0 1 709 379 Z"
+                fill="#d8dde0"/>
+          <text x="705" y="464" text-anchor="middle" class="small">°F</text>
+          <text x="654" y="496" text-anchor="middle" class="label">100</text>
+          <text x="756" y="496" text-anchor="middle" class="label">300</text>
+          <text x="705" y="532" text-anchor="middle" class="small">TRANS TEMP</text>
+        </g>
+
+        <g id="oilGauge" aria-label="Oil pressure in normal range">
+          <circle cx="913" cy="397" r="75" fill="#030506" stroke="#77818a" stroke-width="1.5"/>
+          <path id="oilTrack" fill="none" stroke="#1c2730" stroke-width="18"/>
+          <path id="oilFill" fill="none" stroke="url(#blueBand)" stroke-width="18"/>
+          <path id="oilHot" fill="none" stroke="#ed1b14" stroke-width="4"/>
+          <g id="oilTicks"></g>
+          <g transform="translate(878 370)" stroke="#d8dde0" stroke-width="4" fill="none">
+            <path d="M6 36 L10 18 L42 29 L51 42 H18 Z"/>
+            <path d="M24 17 V1 M24 7 H35"/>
+            <path d="M56 37 C65 29 67 23 67 23 C72 31 69 41 62 43"/>
+          </g>
+          <text x="863" y="496" text-anchor="middle" class="label">L</text>
+          <text x="963" y="496" text-anchor="middle" class="label">H</text>
+          <text x="913" y="532" text-anchor="middle" class="small">OIL PRESS</text>
+        </g>
+
+        <g id="engineGauge" aria-label="Engine temperature 220 degrees Fahrenheit">
+          <circle cx="1121" cy="397" r="75" fill="#030506" stroke="#77818a" stroke-width="1.5"/>
+          <path id="engineTrack" fill="none" stroke="#1c2730" stroke-width="18"/>
+          <path id="engineFill" fill="none" stroke="url(#blueBand)" stroke-width="18"/>
+          <path id="engineHot" fill="none" stroke="#ed1b14" stroke-width="4"/>
+          <g id="engineTicks"></g>
+          <g transform="translate(1089 367)" stroke="#d8dde0" stroke-width="4" fill="none" stroke-linecap="round">
+            <path d="M31 1 V34 A12 12 0 1 1 19 34 V1"/>
+            <path d="M19 8 H31 M19 18 H31 M25 14 V43"/>
+            <path d="M0 51 C7 57 13 57 20 51 C27 57 33 57 40 51 C47 57 53 57 60 51"/>
+          </g>
+          <text x="1121" y="464" text-anchor="middle" class="small">°F</text>
+          <text x="1070" y="496" text-anchor="middle" class="label">140</text>
+          <text x="1172" y="496" text-anchor="middle" class="label">340</text>
+          <text x="1121" y="532" text-anchor="middle" class="small">ENG TEMP</text>
+        </g>
+      </g>
+
+      <g id="speedometer" class="boot" aria-label="Speed 55 miles per hour">
+        <circle cx="1480" cy="360" r="224" fill="#020405" stroke="#93a7b5" stroke-width="1.4"/>
+        <circle cx="1480" cy="360" r="205" fill="none" stroke="#1a242c" stroke-width="47"/>
+        <path id="speedArc" fill="none" stroke="url(#blueBand)" stroke-width="47" class="blue-glow"/>
+        <g id="speedTicks"></g>
+        <line id="speedMarker" stroke="#e8fbff" stroke-width="5" stroke-linecap="square"
+              filter="url(#blueGlow)"/>
+        <circle cx="1480" cy="360" r="132" fill="#020405" stroke="#7c8790" stroke-width="2.5"/>
+        <circle cx="1480" cy="360" r="122" fill="url(#glass)" stroke="#252c31" stroke-width="1"/>
+        <text x="1480" y="327" text-anchor="middle" class="label">MPH</text>
+        <text id="speedValue" x="1480" y="445" text-anchor="middle" font-size="126"
+              font-weight="300" class="metal-value value-shadow">55</text>
+        <text x="1480" y="492" text-anchor="middle" class="label">MPH</text>
+      </g>
+
+      <g class="boot-delay">
+        <path d="M282 575 H1277" stroke="#11181e" stroke-width="6"/>
+        <path d="M285 578 H1277" stroke="#64717a" stroke-opacity=".52" stroke-width="1"/>
+
+        <g aria-label="Coolant temperature">
+          <text x="315" y="614" class="label">C</text>
+          <path d="M346 598 C383 610 433 610 474 598" fill="none" stroke="#1b2730" stroke-width="19"/>
+          <path id="coolantArc" d="M346 598 C383 610 433 610 474 598" pathLength="100"
+                fill="none" stroke="url(#blueBand)" stroke-width="18" stroke-dasharray="58 100"/>
+          <g stroke="#64b7ff" stroke-width="1.5" opacity=".75">
+            <path d="M367 602 V620 M395 605 V623 M423 604 V622 M450 601 V619"/>
+          </g>
+          <path d="M474 598 L480 617" stroke="#ed1b14" stroke-width="4"/>
+          <text x="490" y="614" class="label">H</text>
+          <g transform="translate(527 589)" stroke="#c7ccd0" stroke-width="2.5" fill="none" stroke-linecap="round">
+            <path d="M12 0 V25 A8 8 0 1 1 4 25 V0 M4 7 H12 M8 11 V31"/>
+            <path d="M-4 36 C1 40 5 40 10 36 C15 40 19 40 24 36"/>
+          </g>
+        </g>
+
+        <text id="odometerValue" x="630" y="614" class="label">012345.6</text>
+        <text x="751" y="614" class="small">mi</text>
+
+        <g aria-label="Transmission in drive">
+          <text x="848" y="615" font-size="30" letter-spacing="12" class="muted-text">P R N</text>
+          <text id="driveValue" x="957" y="615" font-size="30" class="drive-text">D</text>
+          <text x="990" y="615" font-size="30" class="muted-text">S</text>
+        </g>
+
+        <text id="rangeValue" x="1117" y="614" class="label">289</text>
+        <text x="1173" y="614" class="small">mi to E</text>
+
+        <g aria-label="Fuel level">
+          <g transform="translate(1345 590)" fill="none" stroke="#c7ccd0" stroke-width="3">
+            <path d="M0 30 V3 H22 V30 M-4 30 H27 M5 9 H17 V17 H5 Z"/>
+            <path d="M22 8 C31 8 31 14 31 20 V27 C31 32 38 32 38 27 V10 L32 4"/>
+          </g>
+          <text x="1386" y="615" class="label">E</text>
+          <path d="M1414 599 C1452 610 1512 610 1551 599" fill="none" stroke="#1b2730" stroke-width="19"/>
+          <path id="fuelArc" d="M1414 599 C1452 610 1512 610 1551 599" pathLength="100"
+                fill="none" stroke="url(#blueBand)" stroke-width="18" stroke-dasharray="72 100"/>
+          <path d="M1414 599 L1408 618" stroke="#ed1b14" stroke-width="4"/>
+          <g stroke="#64b7ff" stroke-width="1.5" opacity=".75">
+            <path d="M1445 605 V623 M1478 607 V625 M1511 605 V623 M1540 602 V620"/>
+          </g>
+          <text x="1577" y="615" class="label">F</text>
+        </g>
+      </g>
+    </svg>
+    <output id="status" hidden aria-live="polite"></output>
+  </main>
+
+  <script>
+    (() => {
+      const SVG_NS = "http://www.w3.org/2000/svg";
+      const state = {
+        speed: 55,
+        rpm: 4500,
+        gear: 4,
+        drive: "D",
+        transTemp: 178,
+        oilPressure: 58,
+        engineTemp: 220,
+        coolant: 58,
+        fuel: 72,
+        odometer: 12345.6,
+        range: 289
+      };
+
+      const polar = (cx, cy, r, degrees) => {
+        const radians = degrees * Math.PI / 180;
+        return { x: cx + r * Math.cos(radians), y: cy + r * Math.sin(radians) };
+      };
+
+      const arcPath = (cx, cy, r, start, end) => {
+        const a = polar(cx, cy, r, start);
+        const b = polar(cx, cy, r, end);
+        const sweep = Math.max(0, end - start);
+        return "M " + a.x.toFixed(2) + " " + a.y.toFixed(2) +
+          " A " + r + " " + r + " 0 " + (sweep > 180 ? 1 : 0) +
+          " 1 " + b.x.toFixed(2) + " " + b.y.toFixed(2);
+      };
+
+      const svgNode = (name, attributes = {}) => {
+        const node = document.createElementNS(SVG_NS, name);
+        Object.entries(attributes).forEach(([key, value]) => node.setAttribute(key, value));
+        return node;
+      };
+
+      function buildSpeedTicks() {
+        const group = document.getElementById("speedTicks");
+        for (let value = 0; value <= 160; value += 2) {
+          const angle = 135 + (value / 160) * 270;
+          const major = value % 20 === 0;
+          const medium = value % 10 === 0;
+          const outer = polar(1480, 360, 214, angle);
+          const inner = polar(1480, 360, major ? 190 : medium ? 196 : 201, angle);
+          group.append(svgNode("line", {
+            x1: inner.x, y1: inner.y, x2: outer.x, y2: outer.y,
+            class: "tick " + (major ? "" : "minor"),
+            "stroke-width": major ? 3 : medium ? 2 : 1.4
+          }));
+          if (major) {
+            const label = polar(1480, 360, 169, angle);
+            const text = svgNode("text", {
+              x: label.x,
+              y: label.y + 10,
+              "text-anchor": "middle",
+              "font-size": "34",
+              fill: "#cbd0d4"
+            });
+            text.textContent = value;
+            group.append(text);
+          }
+        }
+      }
+
+      function buildTachTicks() {
+        const path = document.getElementById("tachRim");
+        const group = document.getElementById("tachTicks");
+        const length = path.getTotalLength();
+
+        for (let step = 0; step <= 90; step += 1) {
+          const offset = length * (step / 90);
+          const p = path.getPointAtLength(offset);
+          const before = path.getPointAtLength(Math.max(0, offset - 1.5));
+          const after = path.getPointAtLength(Math.min(length, offset + 1.5));
+          const dx = after.x - before.x;
+          const dy = after.y - before.y;
+          const magnitude = Math.hypot(dx, dy) || 1;
+          const nx = -dy / magnitude;
+          const ny = dx / magnitude;
+          const major = step % 10 === 0;
+          const medium = step % 5 === 0;
+          const red = step >= 75;
+          const start = major ? 7 : 5;
+          const end = major ? 29 : medium ? 21 : 14;
+          group.append(svgNode("line", {
+            x1: p.x + nx * start,
+            y1: p.y + ny * start,
+            x2: p.x + nx * end,
+            y2: p.y + ny * end,
+            class: "tick " + (major ? "" : "minor") + (red ? " red" : ""),
+            "stroke-width": major ? 2.5 : medium ? 2 : 1.2
+          }));
+
+          if (major && step >= 20 && step <= 80) {
+            const text = svgNode("text", {
+              x: p.x + nx * 58,
+              y: p.y + ny * 58 + 9,
+              "text-anchor": "middle",
+              "font-size": "34",
+              style: "fill:" + (red ? "#df1710" : "#cbd0d4")
+            });
+            text.textContent = step / 10;
+            group.append(text);
+          }
+        }
+      }
+
+      function buildSmallGauge(prefix, min, max, value) {
+        const centers = { trans: [705, 397], oil: [913, 397], engine: [1121, 397] };
+        const center = centers[prefix];
+        const cx = center[0];
+        const cy = center[1];
+        const start = 135;
+        const end = 405;
+        const percent = Math.max(0, Math.min(1, (value - min) / (max - min)));
+        document.getElementById(prefix + "Track").setAttribute("d", arcPath(cx, cy, 65, start, end));
+        document.getElementById(prefix + "Fill").setAttribute("d", arcPath(cx, cy, 65, start, start + 270 * percent));
+        document.getElementById(prefix + "Hot").setAttribute("d", arcPath(cx, cy, 76, 372, 405));
+
+        const group = document.getElementById(prefix + "Ticks");
+        if (!group.childNodes.length) {
+          for (let i = 0; i <= 18; i += 1) {
+            const angle = start + i * 15;
+            const p1 = polar(cx, cy, i % 3 === 0 ? 54 : 57, angle);
+            const p2 = polar(cx, cy, 65, angle);
+            group.append(svgNode("line", {
+              x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y,
+              stroke: i >= 16 ? "#ec1a11" : "#c4cad0",
+              "stroke-opacity": i % 3 === 0 ? ".95" : ".68",
+              "stroke-width": i % 3 === 0 ? "2" : "1.2"
+            }));
+          }
+        }
+      }
+
+      function updateMarkerOnPath(path, marker, ratio, length = 43) {
+        const total = path.getTotalLength();
+        const offset = Math.max(0, Math.min(total, total * ratio));
+        const p = path.getPointAtLength(offset);
+        const before = path.getPointAtLength(Math.max(0, offset - 2));
+        const after = path.getPointAtLength(Math.min(total, offset + 2));
+        const dx = after.x - before.x;
+        const dy = after.y - before.y;
+        const magnitude = Math.hypot(dx, dy) || 1;
+        const nx = -dy / magnitude;
+        const ny = dx / magnitude;
+        marker.setAttribute("x1", p.x - nx * 2);
+        marker.setAttribute("y1", p.y - ny * 2);
+        marker.setAttribute("x2", p.x + nx * length);
+        marker.setAttribute("y2", p.y + ny * length);
+      }
+
+      function render(next = state) {
+        Object.assign(state, next);
+
+        const speed = Math.max(0, Math.min(160, Number(state.speed) || 0));
+        const rpm = Math.max(0, Math.min(9000, Number(state.rpm) || 0));
+        const speedRatio = speed / 160;
+        const rpmRatio = rpm / 9000;
+        const speedAngle = 135 + 270 * speedRatio;
+
+        document.getElementById("speedArc").setAttribute("d", arcPath(1480, 360, 205, 135, speedAngle));
+        const speedInner = polar(1480, 360, 181, speedAngle);
+        const speedOuter = polar(1480, 360, 229, speedAngle);
+        const speedMarker = document.getElementById("speedMarker");
+        speedMarker.setAttribute("x1", speedInner.x);
+        speedMarker.setAttribute("y1", speedInner.y);
+        speedMarker.setAttribute("x2", speedOuter.x);
+        speedMarker.setAttribute("y2", speedOuter.y);
+
+        const tachFill = document.getElementById("tachFill");
+        tachFill.setAttribute("stroke-dasharray", (rpmRatio * 1000).toFixed(2) + " 1000");
+        updateMarkerOnPath(document.getElementById("tachRim"), document.getElementById("tachMarker"), rpmRatio);
+
+        document.getElementById("speedValue").textContent = Math.round(speed);
+        document.getElementById("gearValue").textContent = state.gear;
+        document.getElementById("driveValue").textContent = state.drive;
+        document.getElementById("odometerValue").textContent =
+          String(Number(state.odometer).toFixed(1)).padStart(8, "0");
+        document.getElementById("rangeValue").textContent = Math.round(state.range);
+
+        const coolant = Math.max(0, Math.min(100, Number(state.coolant) || 0));
+        const fuel = Math.max(0, Math.min(100, Number(state.fuel) || 0));
+        document.getElementById("coolantArc").setAttribute("stroke-dasharray", coolant + " 100");
+        document.getElementById("fuelArc").setAttribute("stroke-dasharray", fuel + " 100");
+
+        buildSmallGauge("trans", 100, 300, Number(state.transTemp));
+        buildSmallGauge("oil", 0, 100, Number(state.oilPressure));
+        buildSmallGauge("engine", 140, 340, Number(state.engineTemp));
+
+        document.getElementById("speedometer")
+          .setAttribute("aria-label", "Speed " + Math.round(speed) + " miles per hour");
+        document.getElementById("engineGauge")
+          .setAttribute("aria-label", "Engine temperature " + Math.round(state.engineTemp) + " degrees Fahrenheit");
+        document.getElementById("transGauge")
+          .setAttribute("aria-label", "Transmission temperature " + Math.round(state.transTemp) + " degrees Fahrenheit");
+        document.getElementById("status").value =
+          Math.round(speed) + " miles per hour, " + Math.round(rpm) + " RPM, gear " + state.gear;
+      }
+
+      function animateStartup() {
+        const target = { ...state };
+        const start = performance.now();
+        const duration = 1250;
+        const frame = now => {
+          const t = Math.min(1, (now - start) / duration);
+          const eased = 1 - Math.pow(1 - t, 3);
+          render({
+            ...target,
+            speed: target.speed * eased,
+            rpm: target.rpm * eased
+          });
+          if (t < 1) requestAnimationFrame(frame);
+          else render(target);
+        };
+        requestAnimationFrame(frame);
+      }
+
+      buildSpeedTicks();
+      buildTachTicks();
+      render();
+      if (matchMedia("(prefers-reduced-motion: reduce)").matches) render();
+      else animateStartup();
+
+      window.MustangDashboard = {
+        update(values) { render(values); },
+        getState() { return { ...state }; }
+      };
+
+      window.addEventListener("keydown", event => {
+        if (event.key === "ArrowUp") render({ speed: Math.min(160, state.speed + 1) });
+        if (event.key === "ArrowDown") render({ speed: Math.max(0, state.speed - 1) });
+      });
+    })();
+  </script>
+</body>
+</html>
