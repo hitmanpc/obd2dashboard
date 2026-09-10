@@ -193,7 +193,7 @@ http://localhost:3000
 
 You should see the Mustang-themed dashboard:
 
-![Mustang Dashboard](/docs/images/GaugeScreenshot.png)
+![Mustang Dashboard](/docs/design/dashboard-preview.png)
 
 ## 🔧 Configuration
 

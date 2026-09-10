@@ -1,4 +1,5 @@
 import React from 'react';
+import OilTemperatureIcon from './OilTemperatureIcon';
 
 interface Props {
   name?: string;
@@ -58,13 +59,7 @@ const MiniGauge: React.FC<Props> = ({ name, label, icon, value, min, max, minLab
     }
 
     if (icon === 'oil') {
-      // Oil drop shape
-      return (
-        <g fill="none" stroke="#99aabb" strokeWidth="1.5" strokeLinecap="round">
-          <path d={`M ${cx} 23 Q ${cx + 7} 31 ${cx + 7} 37 Q ${cx + 7} 47 ${cx} 47 Q ${cx - 7} 47 ${cx - 7} 37 Q ${cx - 7} 31 ${cx} 23 Z`} />
-          <line x1={cx - 2.5} y1={32} x2={cx - 3.5} y2={40} strokeWidth="1" />
-        </g>
-      );
+      return <OilTemperatureIcon transform="translate(25 22) scale(.55)" />;
     }
 
     // engine / coolant thermometer

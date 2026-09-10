@@ -5,15 +5,11 @@ interface Props {
   maxRpm: number;
 }
 
-// Wide horizontal arc geometry:
-// Arc center is far below the viewport so the arc appears as a gentle horizontal curve.
-// cx=280, cy=2050, r=1970 produces an arc spanning x≈25..535 at y≈97 (edges) to y≈80 (center)
-// within a 560×110 SVG viewport.
-const ARC_CX = 280;
-const ARC_CY = 2050;
-const ARC_R = 1970;
-const START_ANGLE = 262.56; // degrees — left edge at x≈25
-const END_ANGLE   = 277.44; // degrees — right edge at x≈535
+const ARC_CX = 150;
+const ARC_CY = 150;
+const ARC_R = 120;
+const START_ANGLE = 135;
+const END_ANGLE = 405;
 
 const RPMArc: React.FC<Props> = ({ rpm, maxRpm }) => {
   const cx = ARC_CX, cy = ARC_CY, r = ARC_R;
@@ -39,12 +35,12 @@ const RPMArc: React.FC<Props> = ({ rpm, maxRpm }) => {
   };
 
   // Track and tick radii (outward = higher in screen = larger radius since center is far below)
-  const trackW = 16;
-  const majorTickOuter = r + 28;   // extends above track
-  const majorTickInner = r + 8;    // starts at track outer edge
-  const minorTickOuter = r + 17;
-  const minorTickInner = r + 8;
-  const labelR = r + 44;           // numbers above ticks
+  const trackW = 12;
+  const majorTickOuter = r + 20;
+  const majorTickInner = r + 7;
+  const minorTickOuter = r + 16;
+  const minorTickInner = r + 9;
+  const labelR = r - 17;
 
   const redlineAngle = startAngle + (6 / 8) * sweep;
 
@@ -89,10 +85,16 @@ const RPMArc: React.FC<Props> = ({ rpm, maxRpm }) => {
   // Cursor: bright vertical highlight bar at current RPM position
   const cursorTop = pt(currentAngle, r + 26);
   const cursorBot = pt(currentAngle, r - 6);
-  const cursorX = (cursorTop.x + cursorBot.x) / 2;
-
   return (
-    <svg viewBox="0 0 560 110" width="100%" style={{ display: 'block', overflow: 'visible' }}>
+    <svg viewBox="0 0 300 300" role="img" aria-label={`Tachometer ${Math.round(rpm)} RPM`}>
+      <defs>
+        <radialGradient id="rpmFace" cx="50%" cy="45%" r="58%">
+          <stop offset="0%" stopColor="#101820" />
+          <stop offset="72%" stopColor="#05090d" />
+          <stop offset="100%" stopColor="#010203" />
+        </radialGradient>
+      </defs>
+      <circle cx={cx} cy={cy} r="142" fill="url(#rpmFace)" stroke="#263a47" strokeWidth="1.5" />
       {/* Background track */}
       <path
         d={arcPath(startAngle, endAngle, r)}
@@ -122,19 +124,21 @@ const RPMArc: React.FC<Props> = ({ rpm, maxRpm }) => {
 
       {/* Current RPM cursor highlight */}
       {rpmFraction > 0 && (
-        <rect
-          x={cursorX - 4} y={cursorTop.y}
-          width={8} height={cursorBot.y - cursorTop.y}
-          fill="#44bbff" rx={2}
+        <line
+          x1={cursorTop.x} y1={cursorTop.y} x2={cursorBot.x} y2={cursorBot.y}
+          stroke="#70d6ff" strokeWidth="5" strokeLinecap="round"
           style={{ filter: 'drop-shadow(0 0 8px rgba(68,187,255,0.9))' }}
         />
       )}
 
-      {/* RPM unit label at right end */}
-      <text x="554" y="75" fill="#445566" fontSize="8" fontFamily="Orbitron"
-        textAnchor="end" letterSpacing="0.5">
+      <text x={cx} y="126" fill="#71899a" fontSize="10" fontFamily="Orbitron"
+        textAnchor="middle" letterSpacing="2">
         RPM x1000
       </text>
+      <text x={cx} y="177" fill="#f4f9fc" fontSize="48" fontFamily="Orbitron" fontWeight="700" textAnchor="middle">
+        {(rpm / 1000).toFixed(1)}
+      </text>
+      <text x={cx} y="201" fill="#168fd2" fontSize="9" fontFamily="Orbitron" textAnchor="middle" letterSpacing="2">TACHOMETER</text>
     </svg>
   );
 };

@@ -6,6 +6,7 @@ export interface ObdData {
   'Coolant Temp'?: string;
   CoolantTemp?: string;
   OilTemp?: string;
+  OilPressure?: string;
   TransTemp?: string;
   EngineTemp?: string;
   Gear?: string;

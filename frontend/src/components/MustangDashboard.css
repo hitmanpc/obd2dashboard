@@ -1,120 +1,99 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=swap');
-
 .mustang-dashboard {
-  width: min(100%, 1600px);
-  aspect-ratio: 2.35 / 1;
-  max-height: calc(100dvh - 32px);
-  margin: 0 auto;
-  background: radial-gradient(ellipse at center, #0a0a12 0%, #000000 100%);
-  border-radius: clamp(20px, 3vw, 54px);
-  display: grid;
-  grid-template-columns: 34fr 34fr 32fr;
-  grid-template-rows: 25% 1fr 13%;
-  padding: clamp(12px, 1.8vw, 28px) clamp(14px, 2.3vw, 38px);
-  box-sizing: border-box;
-  font-family: 'Orbitron', sans-serif;
+  --ice: #e8edf2;
+  --red: #ec1a11;
+  color-scheme: dark;
+  font-family: "Bahnschrift", "DIN Alternate", "Arial Narrow", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
   position: relative;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
   overflow: hidden;
-  border: 1px solid #263443;
-  box-shadow:
-    inset 0 0 80px rgba(0, 100, 255, 0.05),
-    0 0 40px rgba(0, 0, 0, 0.8);
+  background:
+    radial-gradient(ellipse at 50% 48%, #111820 0%, #070a0d 47%, #000 88%);
+  isolation: isolate;
 }
 
-.cluster-glass {
+.mustang-dashboard::after {
   position: absolute;
   inset: 0;
+  z-index: 5;
   pointer-events: none;
-  background: linear-gradient(112deg, transparent 12%, rgba(125, 190, 240, 0.035) 39%, transparent 58%);
-  box-shadow: inset 0 0 4px rgba(180, 220, 255, 0.25);
-  z-index: 4;
+  content: "";
+  background:
+    linear-gradient(112deg, transparent 17%, rgba(255,255,255,.035) 27%, transparent 38%),
+    radial-gradient(ellipse at 50% 50%, transparent 54%, rgba(0,0,0,.72) 100%);
+  mix-blend-mode: screen;
 }
 
-.status-row {
-  position: absolute;
-  top: clamp(8px, 1.2vw, 18px);
-  left: 50%;
-  width: 26%;
-  transform: translateX(-50%);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: #223b4e;
-  font-size: clamp(8px, .72vw, 12px);
-  letter-spacing: .28em;
+.mustang-dashboard svg {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
-.turn-signal { color: #173c2a; font-size: 1.3em; }
-.status-row__title { opacity: .8; }
-
-/* Wide RPM arc spans the left two columns at the top */
-.dash-rpm {
-  grid-column: 1 / 3;
-  grid-row: 1;
-  display: flex;
-  align-items: flex-end;
-  padding: 0 4px 4px;
+.mustang-dashboard text {
+  fill: var(--ice);
+  font-family: inherit;
+  font-variant-numeric: tabular-nums lining-nums;
 }
 
-/* Gear indicator: lower-left */
-.dash-left {
-  grid-column: 1;
-  grid-row: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+.mustang-dashboard .label {
+  fill: #c6cbd0;
+  font-size: 20px;
+  font-weight: 400;
+  letter-spacing: 1px;
 }
 
-/* Mini gauges: lower-center */
-.dash-center {
-  grid-column: 2;
-  grid-row: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+.mustang-dashboard .small {
+  fill: #aeb4ba;
+  font-size: 17px;
+  letter-spacing: .5px;
 }
 
-/* Speedometer spans both top and middle rows on the right */
-.dash-right {
-  grid-column: 3;
-  grid-row: 1 / 3;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.mustang-dashboard .tick {
+  stroke: #bbc2c8;
+  stroke-linecap: square;
 }
 
-.mini-gauges-row {
-  display: flex;
-  gap: 16px;
-  margin-top: 4px;
+.mustang-dashboard .tick.minor { opacity: .66; }
+.mustang-dashboard .tick.red { stroke: var(--red); }
+
+.mustang-dashboard .value-shadow {
+  filter: var(--cluster-text-shadow);
 }
 
-@media (max-width: 760px), (max-height: 420px) {
-  .mustang-dashboard {
-    min-height: 300px;
-    aspect-ratio: 2 / 1;
-    grid-template-columns: 28fr 36fr 36fr;
-  }
-
-  .mini-gauges-row { gap: 2px; }
-  .dash-left { transform: scale(.82); }
-  .dash-center { transform: scale(.82); }
-  .dash-right svg { width: 100%; height: auto; }
+.mustang-dashboard .metal-value {
+  fill: var(--cluster-silver-text);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .mustang-dashboard { animation: cluster-startup .65s ease-out both; }
-  .dash-rpm, .dash-left, .dash-center, .dash-right { animation: instruments-on .8s .18s ease-out both; }
+.mustang-dashboard .muted-text {
+  fill: #aeb4ba;
 }
 
-@keyframes cluster-startup {
-  from { opacity: 0; filter: brightness(.2); transform: scale(.985); }
-  to { opacity: 1; filter: brightness(1); transform: scale(1); }
+.mustang-dashboard .drive-text {
+  fill: #ec1a11;
 }
 
-@keyframes instruments-on {
-  from { opacity: 0; filter: blur(3px); }
-  to { opacity: 1; filter: blur(0); }
+.mustang-dashboard .blue-glow {
+  filter: var(--cluster-blue-glow);
+}
+
+.mustang-dashboard .boot {
+  animation: clusterBoot 1s cubic-bezier(.2,.75,.25,1) both;
+}
+
+.mustang-dashboard .boot-delay {
+  animation: clusterBoot 1.2s .18s cubic-bezier(.2,.75,.25,1) both;
+}
+
+@keyframes clusterBoot {
+  from { opacity: 0; transform: scale(.992); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mustang-dashboard .boot,
+  .mustang-dashboard .boot-delay { animation: none; }
 }
