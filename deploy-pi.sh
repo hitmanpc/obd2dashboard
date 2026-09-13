@@ -28,24 +28,34 @@ if ! command -v docker &> /dev/null; then
     echo -e "${YELLOW}Please install Docker first:${NC}"
     echo "curl -fsSL https://get.docker.com -o get-docker.sh"
     echo "sudo sh get-docker.sh"
-    echo "sudo usermod -aG docker \$USER"
+    echo "sudo usermod -aG docker,dialout \$USER"
     echo "sudo reboot"
     exit 1
 fi
 
-# Check if Docker Compose is installed
-if ! command -v docker-compose &> /dev/null; then
+# Determine Docker Compose command (support Compose V2 plugin 'docker compose' and legacy 'docker-compose')
+if docker compose version &> /dev/null; then
+    COMPOSE_CMD="docker compose"
+elif command -v docker-compose &> /dev/null; then
+    COMPOSE_CMD="docker-compose"
+else
     echo -e "${RED}❌ Docker Compose is not installed!${NC}"
-    echo -e "${YELLOW}Please install Docker Compose first:${NC}"
-    echo "sudo pip3 install docker-compose"
+    echo -e "${YELLOW}Please install Docker Compose plugin:${NC}"
+    echo "sudo apt update && sudo apt install -y docker-compose-plugin"
     exit 1
 fi
 
-# Check if user is in docker group
+# Check if user is in docker and dialout groups
 if ! groups $USER | grep -q docker; then
     echo -e "${YELLOW}⚠️  User $USER is not in the docker group${NC}"
     echo -e "${YELLOW}Run: sudo usermod -aG docker \$USER && sudo reboot${NC}"
     echo -e "${YELLOW}Continuing anyway (may require sudo)...${NC}"
+    echo ""
+fi
+
+if ! groups $USER | grep -q dialout; then
+    echo -e "${YELLOW}⚠️  User $USER is not in the dialout group (needed for serial/OBD USB access)${NC}"
+    echo -e "${YELLOW}Run: sudo usermod -aG dialout \$USER${NC}"
     echo ""
 fi
 
@@ -81,24 +91,26 @@ echo ""
 
 # Stop existing containers
 echo -e "${YELLOW}🛑 Stopping existing containers...${NC}"
-docker-compose down 2>/dev/null || true
+$COMPOSE_CMD down 2>/dev/null || true
 echo ""
 
-# Pull latest images
-echo -e "${YELLOW}📦 Pulling latest Docker images...${NC}"
+# Deploy containers (pull if available, build locally otherwise)
 export REGISTRY="$REGISTRY"
 export IMAGE_NAME="$IMAGE_NAME"
 
-# Use production compose file if available
+COMPOSE_ARGS=""
 if [ -f "docker-compose.prod.yml" ]; then
-    echo -e "${BLUE}Using production configuration...${NC}"
-    docker-compose -f docker-compose.yml -f docker-compose.prod.yml pull
-    echo -e "${YELLOW}🚀 Starting services...${NC}"
-    docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+    echo -e "${BLUE}Using production configuration (docker-compose.prod.yml)...${NC}"
+    COMPOSE_ARGS="-f docker-compose.yml -f docker-compose.prod.yml"
+fi
+
+echo -e "${YELLOW}📦 Deploying application...${NC}"
+if $COMPOSE_CMD $COMPOSE_ARGS pull 2>/dev/null; then
+    echo -e "${YELLOW}🚀 Starting services from pulled images...${NC}"
+    $COMPOSE_CMD $COMPOSE_ARGS up -d
 else
-    docker-compose pull
-    echo -e "${YELLOW}🚀 Starting services...${NC}"
-    docker-compose up -d
+    echo -e "${YELLOW}⚠️  Image pull unavailable or failed. Building images locally on Raspberry Pi...${NC}"
+    $COMPOSE_CMD $COMPOSE_ARGS up --build -d
 fi
 
 echo ""
@@ -109,7 +121,7 @@ sleep 15
 
 # Check service status
 echo -e "${BLUE}🔍 Checking service status...${NC}"
-docker-compose ps
+$COMPOSE_CMD $COMPOSE_ARGS ps
 
 echo ""
 
@@ -139,7 +151,7 @@ echo ""
 # Show recent logs if there are issues
 if [[ "$FRONTEND_STATUS" == *"Failed"* ]] || [[ "$BACKEND_STATUS" == *"Failed"* ]]; then
     echo -e "${YELLOW}📄 Recent logs (last 10 lines):${NC}"
-    docker-compose logs --tail=10
+    $COMPOSE_CMD $COMPOSE_ARGS logs --tail=10
     echo ""
 fi
 
@@ -153,9 +165,10 @@ echo -e "${BLUE}📊 Frontend Status: $FRONTEND_STATUS${NC}"
 echo -e "${BLUE}🔧 Backend Status: $BACKEND_STATUS${NC}"
 echo ""
 echo -e "${BLUE}📝 Useful commands:${NC}"
-echo -e "${YELLOW}  View logs:${NC} docker-compose logs -f"
-echo -e "${YELLOW}  Stop app:${NC} docker-compose down"
-echo -e "${YELLOW}  Restart:${NC} docker-compose restart"
+echo -e "${YELLOW}  View logs:${NC} $COMPOSE_CMD logs -f"
+echo -e "${YELLOW}  Stop app:${NC} $COMPOSE_CMD down"
+echo -e "${YELLOW}  Restart:${NC} $COMPOSE_CMD restart"
+echo -e "${YELLOW}  Rebuild locally:${NC} $COMPOSE_CMD up --build -d"
 echo -e "${YELLOW}  Update:${NC} ./deploy-pi.sh"
 echo ""
 
