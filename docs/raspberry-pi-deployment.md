@@ -16,11 +16,12 @@ This guide will help you deploy the OBD2 Dashboard manually on your Raspberry Pi
 curl -fsSL https://get.docker.com -o get-docker.sh
 sudo sh get-docker.sh
 
-# Add your user to docker group
-sudo usermod -aG docker $USER
+# Add your user to docker and dialout (serial/USB) groups
+sudo usermod -aG docker,dialout $USER
 
-# Install Docker Compose
-sudo pip3 install docker-compose
+# Install Docker Compose plugin
+sudo apt update
+sudo apt install -y docker-compose-plugin
 
 # Reboot to apply group changes
 sudo reboot
@@ -28,9 +29,9 @@ sudo reboot
 
 ### 3. Verify Installation
 ```bash
-# After reboot, verify Docker is working
+# After reboot, verify Docker and Compose are working
 docker --version
-docker-compose --version
+docker compose version
 ```
 
 ## 🔌 Hardware Setup
