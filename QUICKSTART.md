@@ -40,7 +40,7 @@ chmod +x deploy-pi.sh
 ## 🛠️ Management Commands
 
 ```bash
-cd ~/obd2dashboard
+cd ~/Documents/obd2dashboard
 
 # View logs
 docker-compose logs -f
