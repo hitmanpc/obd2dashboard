@@ -56,7 +56,7 @@ jobs:
     - name: Deploy application on Raspberry Pi
       run: |
         ssh ${{ github.event.inputs.pi_user }}@${{ github.event.inputs.pi_host }} << 'EOF'
-          cd /home/${{ github.event.inputs.pi_user }}/obd2dashboard
+          cd /home/${{ github.event.inputs.pi_user }}/Docuements/obd2dashboard
           
           # Pull latest ARM64 images
           export REGISTRY=${{ env.REGISTRY }}
