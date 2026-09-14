@@ -16,17 +16,17 @@ jobs:
 
     - name: Stop existing containers
       run: |
-        cd ~/obd2dashboard
+        cd ~/Documents/obd2dashboard
         docker-compose down || true
 
     - name: Pull latest images
       run: |
-        cd ~/obd2dashboard
+        cd ~/Documents/obd2dashboard
         docker-compose pull
 
     - name: Start services
       run: |
-        cd ~/obd2dashboard
+        cd ~/Documents/obd2dashboard
         docker-compose up -d
 
     - name: Verify deployment

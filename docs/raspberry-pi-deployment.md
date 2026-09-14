@@ -50,8 +50,8 @@ docker compose version
 ### 1. Download Deployment Script
 ```bash
 # Create project directory
-mkdir -p ~/obd2dashboard
-cd ~/obd2dashboard
+mkdir -p ~/Documents/obd2dashboard
+cd ~/Documents/obd2dashboard
 
 # Download the deployment script
 wget https://raw.githubusercontent.com/hitmanpc/obd2dashboard/main/deploy-pi.sh
@@ -83,25 +83,25 @@ nano docker-compose.yml
 
 ### Start Services
 ```bash
-cd ~/obd2dashboard
+cd ~/Documents/obd2dashboard
 docker-compose up -d
 ```
 
 ### Stop Services
 ```bash
-cd ~/obd2dashboard
+cd ~/Documents/obd2dashboard
 docker-compose down
 ```
 
 ### View Logs
 ```bash
-cd ~/obd2dashboard
+cd ~/Documents/obd2dashboard
 docker-compose logs -f
 ```
 
 ### Update Application
 ```bash
-cd ~/obd2dashboard
+cd ~/Documents/obd2dashboard
 ./deploy-pi.sh
 ```
 
@@ -164,13 +164,13 @@ To access from outside your network:
 
 ### Manual Update Process
 ```bash
-cd ~/obd2dashboard
+cd ~/Documents/obd2dashboard
 ./deploy-pi.sh  # This will pull latest code and images
 ```
 
 ### Check for Updates
 ```bash
-cd ~/obd2dashboard
+cd ~/Documents/obd2dashboard
 git remote -v  # Shows repository URL
 git log --oneline -5  # Shows recent commits
 ```
